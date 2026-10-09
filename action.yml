@@ -1,0 +1,99 @@
+name: agent-merge-audit
+description: Which merges an AI agent wrote, and whether a person approved them - a dated SOC 2 CC8.1 evidence file (CSV and markdown) for a period. Not audit advice.
+author: agentwares
+branding:
+  icon: git-merge
+  color: purple
+
+# Runs the built CLI from this repository's committed dist/ on your own runner: no npm install, no
+# account. It reads this repository's merged pull requests, their reviews and commits, and the
+# branch's rules through GitHub's API with the token below. GETs only; nothing is written to GitHub
+# and nothing is sent anywhere else.
+inputs:
+  period:
+    description: A month (2026-09) or quarter (2026-Q3). Leave empty to use since and until.
+    required: false
+    default: ""
+  since:
+    description: First day of the period, YYYY-MM-DD (UTC). Default 29 days before until.
+    required: false
+    default: ""
+  until:
+    description: Last day of the period, YYYY-MM-DD (UTC). Default today.
+    required: false
+    default: ""
+  base:
+    description: The branch merged into. Default the repository's default branch.
+    required: false
+    default: ""
+  fail-on:
+    description: none (evidence only), agent-unapproved (fail when an agent-written merge had no independent person's approval) or any (fail on any exception).
+    required: false
+    default: none
+  token:
+    description: Token for GitHub's API. The job's own token needs contents, pull-requests and issues read. Classic branch protection and rule evaluations need an admin token; without one the report says they were not readable.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  markdown:
+    description: Path to the markdown report
+    value: ${{ steps.audit.outputs.markdown }}
+  csv:
+    description: Path to the CSV evidence file
+    value: ${{ steps.audit.outputs.csv }}
+  exceptions:
+    description: How many pull requests and direct pushes have an exception
+    value: ${{ steps.audit.outputs.exceptions }}
+  agent-prs:
+    description: How many merged pull requests an agent wrote or co-wrote
+    value: ${{ steps.audit.outputs.agent-prs }}
+  agent-unapproved:
+    description: How many of them had no independent person's approval
+    value: ${{ steps.audit.outputs.agent-unapproved }}
+
+runs:
+  using: composite
+  steps:
+    - id: audit
+      shell: bash
+      env:
+        AMA_REPO: ${{ github.repository }}
+        AMA_PERIOD: ${{ inputs.period }}
+        AMA_SINCE: ${{ inputs.since }}
+        AMA_UNTIL: ${{ inputs.until }}
+        AMA_BASE: ${{ inputs.base }}
+        AMA_FAIL_ON: ${{ inputs.fail-on }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        set +e
+        case "$AMA_FAIL_ON" in none|agent-unapproved|any) ;; *) echo "agent-merge-audit: fail-on must be none, agent-unapproved or any; got \"$AMA_FAIL_ON\""; exit 2 ;; esac
+        out="$RUNNER_TEMP/agent-merge-audit"
+        mkdir -p "$out"
+        args=("$AMA_REPO" --json)
+        if [ -n "$AMA_PERIOD" ]; then args+=(--period "$AMA_PERIOD"); fi
+        if [ -n "$AMA_SINCE" ]; then args+=(--since "$AMA_SINCE"); fi
+        if [ -n "$AMA_UNTIL" ]; then args+=(--until "$AMA_UNTIL"); fi
+        if [ -n "$AMA_BASE" ]; then args+=(--base "$AMA_BASE"); fi
+        node "$GITHUB_ACTION_PATH/dist/cli.js" "${args[@]}" > "$out/report.json"
+        code=$?
+        if [ "$code" -ne 0 ]; then cat "$out/report.json"; exit "$code"; fi
+        OUT="$out" node --input-type=module -e '
+          import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
+          import { pathToFileURL } from "node:url";
+          const m = await import(pathToFileURL(process.env.GITHUB_ACTION_PATH + "/dist/index.js").href);
+          const report = JSON.parse(readFileSync(process.env.OUT + "/report.json", "utf8"));
+          const csv = m.renderCsv(report);
+          const name = m.csvName(report);
+          const md = m.renderMarkdown(report, { name: name + ".csv", sha256: m.sha256(csv) });
+          const files = [`${process.env.OUT}/${name}.csv`, `${process.env.OUT}/${name}.md`];
+          writeFileSync(files[0], csv);
+          writeFileSync(files[1], md);
+          process.stdout.write(m.renderSummary(report, files));
+          // a step summary holds 1 MiB; the files hold everything
+          const cap = 900000;
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, md.length > cap ? md.slice(0, cap) + "\n\n(cut here; the whole report is in " + files[1] + ")\n" : md);
+          const s = report.summary;
+          appendFileSync(process.env.GITHUB_OUTPUT, `markdown=${files[1]}\ncsv=${files[0]}\nexceptions=${s.prs_with_exceptions + s.direct_pushes}\nagent-prs=${s.agent_prs}\nagent-unapproved=${s.agent_without_independent_approval}\n`);
+          if (m.fails(report, process.env.AMA_FAIL_ON)) process.exitCode = 1;
+        '

@@ -1,0 +1,3275 @@
+{
+  "recorded_at": "2026-10-09T21:44:53.753Z",
+  "note": "One anonymous run of agent-merge-audit against the public repository github/github-mcp-server, 2026-10-01 to 2026-10-02: read-only GETs to api.github.com with no token. Bodies are trimmed to the fields the audit reads; people's email addresses are replaced with redacted@example.invalid.",
+  "responses": [
+    {
+      "path": "/repos/github/github-mcp-server",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "30",
+        "x-ratelimit-resource": "core"
+      },
+      "body": {
+        "full_name": "github/github-mcp-server",
+        "default_branch": "main",
+        "private": false,
+        "visibility": "public",
+        "html_url": "https://github.com/github/github-mcp-server"
+      }
+    },
+    {
+      "path": "/search/issues?q=repo%3Agithub%2Fgithub-mcp-server%20is%3Apr%20is%3Amerged%20base%3Amain%20merged%3A2026-10-01..2026-10-02&per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "9",
+        "x-ratelimit-resource": "search"
+      },
+      "body": {
+        "total_count": 11,
+        "incomplete_results": false,
+        "items": [
+          {
+            "number": 3383,
+            "title": "build(ui): migrate to React 19 and Primer React 38",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3383",
+            "created_at": "2026-10-02T09:38:15Z",
+            "body": "<!--\nCopilot: Fill all sections. Prefer short, concrete answers.\nIf a checkbox is selected, add a brief explanation.\n-->\n\n## Summary\n<!-- In 1–2 sentences: what does this PR do? -->\nMigrate the four MCP Apps views to React/React DOM 19.3.0, their 19.3.0 types, and Primer React 38.40.1. Replace removed styling APIs rather than adding the temporary styled-components compatibility package.\n\n## Why\n<!-- Why is this change needed? Link issues or discussions. -->\nFollow-up to #3370, which deferred these major upgrades for separate visual review. Based on latest main at cd502333; no issue closed.\n\n## What changed\n<!-- Bullet list of concrete changes. -->\n- Upgrade React, React DOM and their types to 19.3.0; upgrade Primer React to 38.40.1 and add the directly imported Primer primitives 11.10.0.\n- Replace every removed `Box` and `sx`/styled-system call site with native HTML/styles and CSS Modules for Markdown and nested selectors. Preserve layout scales, raw direct `gap` values, truncation, custom-label colors and Markdown interactions.\n- Load bundled primitive CSS and light/dark themes; use the CSS-based `ThemeProvider` from `@primer/react/next` instead of the deprecated JavaScript theme provider.\n- Replace deprecated `Flash` with accessible critical `Banner` components; augment `react/jsx-runtime` for the Markdown custom elements. Existing `createRoot`, refs and function defaults already meet React 19 requirements; no propTypes/legacy React DOM APIs were present.\n- Document the UI workflow in CONTRIBUTING.md. No changes to `@modelcontextprotocol/ext-apps` (1.7.5), TypeScript (5.9.3), `@types/node` (25.9.9), or their lock entries.\n\n### Visual review\nCaptured baseline and upgraded builds in Chrome with a local JSON-RPC MCP Apps host fixture, using the actual built single-file HTML. Compared all four views in light/dark themes at 720px and 360px, plus Markdown previews, metadata menus, submitted success/error states and narrow custom issue fields. No new horizontal overflow or browser errors/warnings in the exercised flows.\n\nExpected differences: Primer 38's token colors/borders and label typography differ slightly, especially in dark mode. Error messages now use a critical Banner with an icon and accessible region instead of deprecated Flash. Layout, form data, editor behavior and submission payloads remain unchanged.\n\nEach comparison has **before on the left, after on the right**; rows are labeled by view. Screenshot data is synthetic and all tool calls are mocked.\n\n<details>\n<summary>All four views — light, 720px</summary>\n\n![All four views in light mode, before and after](https://github.com/user-attachments/assets/343e5df4-08de-4721-84c4-e8200aabd93c)\n\n</details>\n\n<details>\n<summary>All four views — dark, 720px</summary>\n\n![All four views in dark mode, before and after](https://github.com/user-attachments/assets/3fd2e676-e74a-4610-ac9f-14c6f38543f9)\n\n</details>\n\n<details>\n<summary>All four views — light, 360px</summary>\n\n![All four narrow views in light mode, before and after](https://github.com/user-attachments/assets/ff22e7e6-380d-42d5-99ac-693bf1596f21)\n\n</details>\n\n<details>\n<summary>All four views — dark, 360px</summary>\n\n![All four narrow views in dark mode, before and after](https://github.com/user-attachments/assets/15a32971-0816-4732-8362-cac868584fea)\n\n</details>\n\n<details>\n<summary>Markdown previews — all three form views, light and dark</summary>\n\n![Light Markdown previews, before and after](https://github.com/user-attachments/assets/3562a4c2-d0f3-4dbf-aa89-e002478e0db9)\n\n![Dark Markdown previews, before and after](https://github.com/user-attachments/assets/820db0c1-f434-41f1-9f95-371c1db31a96)\n\n</details>\n\n<details>\n<summary>Error presentation — Flash to Banner</summary>\n\n![Error states in all three form views, before and after](https://github.com/user-attachments/assets/66223aad-7d0d-4e29-a434-5475bd202735)\n\n</details>\n\n<details>\n<summary>Submitted success states — all three form views</summary>\n\n![Success states, before and after](https://github.com/user-attachments/assets/3463199c-6001-4714-9386-95edd516ebf3)\n\n</details>\n\n<details>\n<summary>Metadata menus and narrow custom issue fields</summary>\n\n![Label and reviewer menus, before and after](https://github.com/user-attachments/assets/55cfb3e1-1dba-4925-9d55-b4b07f23f50e)\n\n![Narrow custom issue fields, before and after](https://github.com/user-attachments/assets/99d1719f-a9f3-4339-b98b-2bb42d671ab3)\n\n</details>\n\n### Remaining risks\nDraft intentionally pending human visual sign-off. Browser coverage used mocked tool responses in Chrome, not live authenticated VS Code/other MCP hosts or Firefox/Safari; host-specific rendering/focus should be checked before marking ready. The pre-existing Vite warning about a future native config loader and `__dirname` remains; Vite is not changed here. The UI package has no existing `npm test` script.\n\nUpgrade references reviewed: [React 19 upgrade guide](https://react.dev/blog/2024/04/25/react-19-upgrade-guide), [Primer 37/38 changelog](https://github.com/primer/react/blob/main/packages/react/CHANGELOG.md).\n\n## MCP impact\n<!-- Select one or more. If selected, add 1–2 sentences. -->\n- [x] No tool or API changes — UI dependencies, styles and error presentation only; Go tool schemas, resource URIs and protocol integration are unchanged.\n- [ ] Tool schema or behavior changed\n- [ ] New tool added\n\n## Prompts tested (tool changes only)\n<!-- If you changed or added tools, list example prompts you tested. -->\n<!-- Include prompts that trigger the tool and describe the use case. -->\n<!-- Example: \"List all open issues in the repo assigned to me\" -->\n- N/A: no tool changes. Browser fixtures exercised profile, issue create, PR create and PR edit views.\n\n## Security / limits\n<!-- Select if relevant. Add a short note if checked. -->\n- [x] No security or limits impact — permissions, CSP and external resource policy unchanged; CSS/JS remain bundled in each HTML resource. `npm audit` reports zero vulnerabilities.\n- [ ] Auth / permissions considered\n- [ ] Data exposure, filtering, or token/size limits considered\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go` \n- [x] I am not renaming tools as part of this PR — all names unchanged.\n\nNote: if you're renaming tools, you *must* add the tool aliases. For more information on how to do so, please refer to the [official docs](https://github.com/github/github-mcp-server/blob/main/docs/tool-renaming.md).\n\n## Lint & tests\n<!-- Check what you ran. If not run, explain briefly. -->\n- [x] Linted locally with `./script/lint` — `GOTOOLCHAIN=go1.26.8 script/lint` passed with 0 issues (installed Go 1.27 is too new for the pinned linter).\n- [x] Tested locally with `./script/test` — `GOTOOLCHAIN=go1.26.8 script/test` passed, including the full Go race suite with the upgraded UI built.\n\nAdditional evidence:\n- `cd ui && npm ci && npm run typecheck && npm run build && npm audit` — passed; all four self-contained HTML resources emitted, zero vulnerabilities.\n- `cd ui && npm ls --all` — passed; no invalid peer dependencies.\n- `GOTOOLCHAIN=go1.26.8 go test ./pkg/github -run 'TestRegisterUIResources_ReadableViaClient|TestNewMCPServer_RegistersUIResources' -v` — passed without skips; all four upgraded UI resources are embedded and readable through the Go MCP server.\n- Session-local Playwright `capture.mjs before/after` — passed: 16 view/theme/width combinations and 12 preview screenshots per build.\n- Session-local Playwright `interactions.mjs before/after` — passed: all three forms in both themes, exact bold-toolbar output, list continuation/exit, preview, metadata selections, submitted title/body/reviewer/label payloads, success/error states and narrow custom fields. Upgraded inactive-tab hover and Banner region assertions also passed.\n- `git diff --check` — passed.\n- Live PAT-dependent e2e tests were not run. No tool/toolset definitions changed, so toolsnap/doc generation is not applicable.\n\n## Docs\n\n- [ ] Not needed\n- [x] Updated (README / docs / examples) — CONTRIBUTING.md documents React 19/Primer 38 styling, build and visual-review requirements.\n",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T14:31:12Z"
+            }
+          },
+          {
+            "number": 3382,
+            "title": "ci: migrate cosign to v3 and dual-publish image signatures",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3382",
+            "created_at": "2026-10-02T09:32:22Z",
+            "body": "<!--\nCopilot: Fill all sections. Prefer short, concrete answers.\nIf a checkbox is selected, add a brief explanation.\n-->\n\n## Summary\n<!-- In 1–2 sentences: what does this PR do? -->\nUpgrade cosign from v2.6.5 to v3.1.3 and publish **both legacy signatures and native Sigstore bundles for the identical immutable image digest**. Unmodified verification commands work with the tested v2/v3 clients; the user-facing verification documentation initially added by this PR has been removed as requested.\n\n## Why\n<!-- Why is this change needed? Link issues or discussions. -->\nFollow-up to [#3370](https://github.com/github/github-mcp-server/pull/3370), which deferred v3 because its bundle defaults could break consumers. No issue is automatically closed.\n\nBoth v2.6.5 and v3.1.3 fix GHSA-fx35-mq7g-6g98. v3.1.3 was the latest stable checked on 2026-10-02. The original implementation retained only legacy signatures; this revision implements the user's explicit request for dual publication without a consumer command migration or extra repository docs.\n\n## What changed\n<!-- Bullet list of concrete changes. -->\n- Keep the existing SHA-pinned installer and select **cosign v3.1.3**.\n- Sign once per repository/index digest in two sequential, required steps: legacy `cosign sign --yes --new-bundle-format=false --use-signing-config=false --registry-referrers-mode=legacy`, then native **`cosign sign --yes`**, with v3's default bundle format and TUF-provided signing-service configuration.\n- Both steps use exactly `\"${REGISTRY}/${IMAGE_NAME}@${DIGEST}\"`, with `DIGEST` from the same build output. Tags are aliases to that image, not separate subjects; signing once avoids accumulating identical bundles for every alias.\n- Preserve GitHub OIDC/Fulcio, transparency logging, existing permissions, digest signing, and PR publication/signing exclusions. Either signing step failing fails the job; native signing is skipped if legacy signing fails.\n- Correct the pre-existing misleading private-image comment: `--yes` also consents to public transparency-log disclosure.\n- Remove `docs/verify-artifacts.md` and all README/SECURITY additions introduced by this PR. Pre-existing docs are unchanged. **The aggregate PR diff is now only `.github/workflows/docker-publish.yml`.**\n\nOnly the Docker workflow uses cosign. The release workflow and `.goreleaser.yaml` use GitHub build-provenance attestations for archives/checksums, not cosign blob signatures; those remain unchanged.\n\n## Consumer impact and supported limits\n\n**Tested unchanged command behavior, not universal client compatibility:** cosign **v2.5.3**, **v2.6.5**, and **v3.1.3** all verify the same dual-signed digest without any format/discovery flag. This was proved both locally and against the real user-authorized GHCR test image with GitHub OIDC/Fulcio/Rekor checks enabled. v2.5.3 is an older compatibility-test client, not a recommendation to use an unpatched release.\n\n| Client/path | Observed behavior on the dual-signed digest |\n| --- | --- |\n| v2.5.3, default `cosign verify` | Verifies the legacy `.sig` signature. |\n| v2.6.5, default `cosign verify` | Auto-discovers and verifies the native bundle. |\n| v3.1.3, default `cosign verify` | Auto-discovers and verifies the native bundle. |\n| v3.1.3, `--new-bundle-format=false` | Explicitly verifies the legacy `.sig` signature. |\n\n**Important evidence:** v2.6.5 auto-discovery overrides even `--new-bundle-format=false` when native bundles exist. We did not mislabel that result as legacy verification. Its default image command verified legacy before the native pass; its `verify-blob` also cryptographically verified the exact retained legacy payload/signature downloaded from `.sig` storage after dual publication. The older v2.5.3 default image command and v3's explicit legacy path verified `.sig` directly while native bundles coexisted.\n\nNative verification output is not byte-for-byte the legacy JSON: the native `critical.type` is `https://sigstore.dev/cosign/sign/v1`, and `critical.identity.docker-reference` includes the digest. Consumers parsing those values or supplying custom legacy certificate/root flags need separate compatibility review. Retaining `.sig` does not force v2.6.5 to choose it. Unsupported/untested versions, offline/custom trust setups, policy engines, and registries other than tested GHCR/local `registry:3` are **not** claimed universally compatible.\n\nThe legacy pass retains the legacy image payload, `.sig` storage and Rekor v1 defaults. `--use-signing-config=false` is necessary as well as the format opt-out: v3 rejects legacy image signing with its default signing config unless a local bundle is supplied. Native signing uses protobuf-defined Sigstore bundles serialized as JSON, an OCI referring artifact, and default TUF signing-service discovery. On both tested registries discovery used the **OCI referrers fallback tag**, distinct from `.sig`. This does not assume the registry serves the native referrers HTTP API.\n\nThe real native bundle's media type was `application/vnd.dev.sigstore.bundle.v0.3+json`; its transparency entry was `dsse` v0.0.1, with inclusion promise/proof and a `rekor.sigstore.dev` checkpoint. The legacy entry was `hashedrekord`. Native defaults **must not be described as necessarily selecting Rekor v2**: current TUF configuration selected the observed service. `--new-bundle-format` remains supported but deprecated in v3.1.3. `cosign verify` does not accept the signing-only `--registry-referrers-mode` flag.\n\nResearch: [v3 announcement](https://blog.sigstore.dev/cosign-3-0-available/), [v3.1.3 release](https://github.com/sigstore/cosign/releases/tag/v3.1.3), [signing-config validation](https://github.com/sigstore/cosign/blob/v3.1.3/cmd/cosign/cli/signcommon/common.go), [v3 discovery](https://github.com/sigstore/cosign/blob/v3.1.3/cmd/cosign/cli/verify/verify.go), [v2.6.5 discovery](https://github.com/sigstore/cosign/blob/v2.6.5/cmd/cosign/cli/verify/verify.go), and [OCI publication](https://github.com/sigstore/cosign/blob/v3.1.3/pkg/oci/remote/write.go).\n\n## Real GHCR / GitHub OIDC / Rekor test\n\n**Passed on the reviewed commit `813e3fa03465d1aee39f70771349c15ae68bb839`:** [authorized isolated branch dispatch](https://github.com/github/github-mcp-server/actions/runs/36997176977), both signing steps successful.\n\nThe user explicitly authorized isolated branch/test publication. Before dispatch, the pinned metadata action and ref rules were inspected: branch dispatch cannot generate semver/tag aliases; `edge` requires default branch `main`; schedule is inactive; explicit `latest` is disabled for a branch; automatic `latest` is not emitted for branch/sha tags. Actual run metadata confirmed **only**:\n\n```text\nghcr.io/github/github-mcp-server:sammorrowdrums-cosign-v3-signing-migration\nghcr.io/github/github-mcp-server:sha-813e3fa\n```\n\nBoth resolve to the same multi-platform index digest:\n\n```text\nsha256:4a5a05533a67518a32fed05da34f1b64bf8d3bcc8148053eced9725a85aba77d\n```\n\nRead-only registry inspection confirmed a retained legacy `.sig` manifest with certificate/Rekor material and a separate OCI referrers fallback index containing the native bundle. Both signatures' subjects match the digest above. No `latest`, `edge`, main/nightly, or release/version aliases were published by this dispatch. No Git tags were pushed; the GoReleaser/release workflows were not triggered; nothing was merged.\n\n**Exact verification command, unchanged for all three tested client versions — passed with no insecure bypass flags:**\n\n```sh\nIMAGE='ghcr.io/github/github-mcp-server@sha256:4a5a05533a67518a32fed05da34f1b64bf8d3bcc8148053eced9725a85aba77d'\nIDENTITY='https://github.com/github/github-mcp-server/.github/workflows/docker-publish.yml@refs/heads/sammorrowdrums-cosign-v3-signing-migration'\nISSUER='https://token.actions.githubusercontent.com'\ncosign verify --certificate-identity \"$IDENTITY\" --certificate-oidc-issuer \"$ISSUER\" \"$IMAGE\"\n```\n\nv3.1.3 also passed that command with `--new-bundle-format=false`, proving the real legacy certificate/log path remains valid. Default v2.6.5/v3.1.3 rejected the wrong `refs/heads/main` certificate identity and an incorrect OIDC issuer. Verification checked the exact digest, workflow/ref identity, issuer, certificate trust, and transparency material. An empty, isolated `DOCKER_CONFIG` was used for anonymous reads; user registry credentials/configuration were not modified.\n\nThe branch test now covers **real GHCR publication, v3 keyless issuance, and public Rekor material**, not just a generated-key proxy. Remaining release gate: confirm any additional supported consumers/policies and the actual release/prerelease ref identity through the normal maintainer-controlled release process. A prerelease tag/ref was not authorized or exercised by this branch test; native HTTP referrers API mode, key/log rotation, parallel same-digest writers, and injected public-service outages were not tested.\n\n## Partial publication and retry semantics\n\nPublication is **not atomic**. Image aliases are pushed before signatures. If legacy signing fails, CI fails and the native pass is skipped; an unsigned image or partial legacy upload may already exist. If native signing fails, CI fails, but a valid legacy signature and possibly partial native upload/log entries may remain. No failure is masked with `continue-on-error`, `always()`, or success-shaped fallback.\n\nRetry the signing commands for the **recorded immutable digest**, then verify both formats and the expected identity. Local tests injected native failure after the legacy pass and proved retry completes dual publication without changing the existing `.sig` manifest. Two full same-digest reruns and a second signing key preserved all previous signatures. Native bundles can accumulate on rerun; this is safe append/retention behavior, **not exactly-once/idempotent artifact counts**. A full workflow rerun may rebuild a different digest because metadata changes, so it is not guaranteed to repair the old partially signed digest. Do not delete prior `.sig`/referrer artifacts as an automatic cleanup or silently accept a partial publication.\n\n## MCP impact\n<!-- Select one or more. If selected, add 1–2 sentences. -->\n- [x] No tool or API changes — publisher workflow only; toolsnaps unchanged and passing.\n- [ ] Tool schema or behavior changed\n- [ ] New tool added\n\n## Prompts tested (tool changes only)\n<!-- If you changed or added tools, list example prompts you tested. -->\n<!-- Include prompts that trigger the tool and describe the use case. -->\n<!-- Example: \"List all open issues in the repo assigned to me\" -->\n- N/A: no MCP tool changes.\n\n## Security / limits\n<!-- Select if relevant. Add a short note if checked. -->\n- [ ] No security or limits impact\n- [x] Auth / permissions considered — same workflow OIDC and packages permissions; both passes issue ephemeral Fulcio certificates; real exact identity/issuer verification passed.\n- [x] Data exposure, filtering, or token/size limits considered — two public signing/log entries per digest may be generated; public-log disclosure is unchanged. Only local disposable-key tests disabled tlog upload/verification, never production or real consumer verification.\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go` \n- [x] I am not renaming tools as part of this PR — names/schemas unchanged.\n\nNote: if you're renaming tools, you *must* add the tool aliases. For more information on how to do so, please refer to the [official docs](https://github.com/github/github-mcp-server/blob/main/docs/tool-renaming.md).\n\n## Lint & tests\n<!-- Check what you ran. If not run, explain briefly. -->\n- [x] Linted locally with `./script/lint` — `GOTOOLCHAIN=go1.26.8 TMPDIR=\"$PWD/bin/lint-tmp\" sh script/lint`: **passed, 0 issues**, using the branch's pinned toolchain/linter.\n- [x] Tested locally with `./script/test` — `GOTOOLCHAIN=go1.26.8 sh script/test`: **passed full race suite/toolsnaps**, after lint.\n\n| Exact command/check | Result |\n| --- | --- |\n| `actionlint -oneline -ignore 'label \"ubuntu-latest-xl\" is unknown' .github/workflows/docker-publish.yml` | Passed; only the pre-existing custom runner diagnostic excluded. |\n| `cosign sign --yes --help` and legacy command with all three compatibility flags plus `--help` on v3.1.3 | Passed flag parsing; both actual formats also signed locally and in the real dispatch. |\n| `python3 test_dual.py` (session-only harness; checksum-verified upstream v2.5.3/v2.6.5/v3.1.3 binaries, generated keys, disposable loopback `registry:3`) | Passed coexistence, exact signature subjects/storage, default discovery and verification, retained signatures across two reruns/second signer, native failure/retry, wrong-key rejection, and tampering with **each** format. |\n| `python3 test_workflow.py` (session-only harness reading the actual YAML and executing its commands with a failing cosign stub under `bash -eo pipefail`) | Passed: successful flow invokes both commands on identical digest; legacy failure exits 42 with native skipped; native failure exits 43; both steps exclude PRs and cannot continue on error. |\n| `python3 verify_public.py sha256:4a5a05533a67518a32fed05da34f1b64bf8d3bcc8148053eced9725a85aba77d` (read-only session harness) | Passed actual test-tag/digest equality, both stored formats, unmodified real v2/v3 verification, v3 legacy verification, and wrong identity/issuer negatives. |\n| `git diff cd502333 -- README.md SECURITY.md` and file absence check | Passed: original docs unchanged; new verification file removed. |\n| `git diff --check` | Passed. |\n\nLocal signing commands used generated keys and **only locally** added `--key test.key --tlog-upload=false`; the native test also used `--use-signing-config=false` to avoid public service use. Local verification used `--key test.pub --insecure-ignore-tlog`. These tests did not pretend to cover production service discovery; the subsequent authorized real dispatch used the exact unmodified publisher commands with GitHub OIDC/Rekor and covered that gap.\n\nThe local tamper test replaced every legacy signature's bytes, then every native DSSE signature's bytes under its own discovery index, asserting cryptographic failure rather than merely missing signatures. Valid native signatures still verified when legacy was corrupted; corrupt native bundles were rejected by default v2.6.5/v3.1.3 **without silently falling back** to a valid legacy signature. Generated-key wrong-key checks failed in both formats. Local registries were stopped; fixtures are outside the repository. No tests require consumers to change their commands.\n\n**Fresh hosted CI for `813e3fa0`: 17 passing checks, 1 failing lint check.** Docker PR build, all Go platform builds, CodeQL, docs-check and MCP diffs passed; both PR signing steps were correctly skipped. The real isolated dispatch additionally passed both signing steps.\n\nThe failing [PR lint run](https://github.com/github/github-mcp-server/actions/runs/36996702609) uses newer linter/go-github changes now on `main` and reports pre-existing `govet` inline/type-parameter-inference errors in `pkg/github/discussions.go:102–104`. Current [main lint](https://github.com/github/github-mcp-server/actions/runs/36994963058) also fails with that same class of errors in untouched code; main's [go-github v92 merge lint](https://github.com/github/github-mcp-server/actions/runs/36994860918) failed too. The aggregate PR modifies none of those code/linter surfaces. That independent base regression was reported to the dependency coordinator and **must be resolved before merge**; this PR does not suppress it or mix in unrelated Go changes.\n\n`script/generate-docs` is not applicable: no MCP tools/toolsets changed. Live PAT-based e2e and a release-tag build were not run.\n\n## Docs\n\n- [x] Not needed — user explicitly requested removing this PR's extra signing/verification docs. Engineering evidence, version limits, and rollout/rollback are preserved here instead; existing unrelated docs are untouched.\n- [ ] Updated (README / docs / examples)\n\n## Rollout plan\n\n1. Review the successful isolated branch dispatch and real consumer verification above. Confirm supported older clients/policy consumers and accept v2.6.5's native auto-discovery/output differences; do not claim universal command/output compatibility.\n2. Resolve the independent current-main lint regression and require applicable checks to pass before merge. Release maintainers should verify actual prerelease/release identity and any policy-specific tooling through the normal authorized release process; no additional tag/publication is automatically triggered by this PR work.\n3. Merge only after approval. Main pushes and scheduled Docker runs publish too, so merge itself starts rollout; monitor both required signing steps and verify both artifacts at the first main/nightly and next stable release digests.\n4. Assign an owner/exit criteria for removing legacy publication. Deprecated v3 compatibility flags, Rekor v1 availability, native bundles/referrer discovery, and any future v4 migration require an explicit follow-up decision. Keep both formats until that decision is made.\n\n## Rollback plan\n\nFor a native-publication regression, remove/disable the native step and keep legacy signing with the tested flags; if necessary restore the installer to security-fixed **v2.6.5** as well (its CLI accepts those flags). Do not claim that removing the step removes already-published native bundles: v2.6.5 can still discover those and cannot be forced to legacy with the false flag. Preserve existing signature/referrer artifacts; do not delete production `.sig`/referrer tags automatically.\n\nFor an unsigned/partial publication, have an authorized maintainer restore the known-good publisher and re-sign the **recorded affected immutable digest** in the required format(s), then verify both subjects and identities. A full rebuild may produce a new digest and is not guaranteed to repair the old one. Do not repoint production aliases or push/modify Git release tags as automated rollback. No merge has been performed.\n\n**Maintainer decisions:** supported consumer/policy matrix and native output compatibility, release-ref gate, independent lint fix, signature-retention/duplicate-bundle policy, and owner/deadline for eventually retiring legacy publication.",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T11:22:58Z"
+            }
+          },
+          {
+            "number": 3381,
+            "title": "build(deps): upgrade go-github to v92.0.0",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3381",
+            "created_at": "2026-10-02T09:30:25Z",
+            "body": "<!--\nCopilot: Fill all sections. Prefer short, concrete answers.\nIf a checkbox is selected, add a brief explanation.\n-->\n\n## Summary\n<!-- In 1–2 sentences: what does this PR do? -->\nUpgrade `github.com/google/go-github` from `v89.0.1-0.20260728185857-34349a88bac3` to stable `v92.0.0`, migrating imports and affected requests without changing MCP tool names, schemas, or output contracts.\n\n## Why\n<!-- Why is this change needed? Link issues or discussions. -->\nFollow-up to #3370, which deferred this major-version migration. The branch starts from the latest fetched `main`, `cd502333` (#3370).\n\n## What changed\n<!-- Bullet list of concrete changes. -->\n- Update all production, unit-test, and e2e imports to `/v92`; tidy without changing other dependency versions or the Go 1.26.8 directive.\n- Use value-based `IssueCommentRequest{Body: body}` for comment creation/updating; replace `Issues.EditComment` with `Issues.UpdateComment`. Preserve POST/PATCH bodies, validation, error handling, and minimal ID/URL outputs. Add a creation request-body assertion; updating already asserts its payload.\n- Pass the raw branch to `ListRulesForBranch`: v92 escapes it internally. Existing slash/hash/percent regression tests caught double escaping and now pass unchanged.\n- Regenerate platform license reports and move the unchanged BSD license from the v89 path to v92.\n- Retain supported `github.Ptr` with a narrow deprecation-warning exclusion. Pinned golangci-lint v2.9.0 misreports SA4006 for Go 1.26 `new(expression)`; trial upgrades introduce unrelated baseline findings. No checks are disabled globally; linter/CI versions remain unchanged. Remove this compatibility exclusion in a separate linter upgrade.\n\nReviewed published release notes/changelogs for [v90](https://github.com/google/go-github/releases/tag/v90.0.0), [v91](https://github.com/google/go-github/releases/tag/v91.0.0), and [v92](https://github.com/google/go-github/releases/tag/v92.0.0), plus tagged commit comparisons. Complete breaking-change disposition:\n\n| Release | Breaking change | Repository handling |\n| --- | --- | --- |\n| All | Major module import path | Migrate every Go import and exported library surface to `/v92`, including e2e. |\n| v90 | Dependabot secrets request/response refactor | No secret-management calls; alert APIs unchanged. |\n| v90 | Repository merge/upstream merge value requests and required value fields | No affected calls; PR merging uses a different API. |\n| v90 | Template repo value request and string `Name` | No template-creation calls. |\n| v90 | Deployment branch policy value requests and string `Name` | No affected calls. |\n| v90 | SARIF upload value request and non-pointer required fields | No upload calls. |\n| v90 | `NewPullRequest` → `CreatePullRequest`, value request, string `Head`/`Base` | Already present in pinned v89 revision and already adopted here; only imports change. |\n| v90 | Split issue create/update requests; `Issues.Edit` → `Update` | Already adopted from pinned revision, including granular writes and nullable-type handling. |\n| v90 | Autolink request/method renamed and passed by value | No affected calls. |\n| v90 | Split label requests; `EditLabel` → `UpdateLabel` | Label writes use GraphQL, not affected REST methods; response types already match pinned revision. |\n| v90 | Split custom repository role requests, by value | No affected calls. |\n| v90 | Review dismissal request renamed/new submit request, by value | Review writes use GraphQL, not affected REST methods. |\n| v90 | Connected external group update gets new value request | No affected calls. |\n| v91 | Issue comment value `IssueCommentRequest`; `EditComment` → `UpdateComment` | Migrate both call sites; pin exact request bodies and minimal responses. Added upstream comment metadata is not exposed by minimal converters. |\n| v91 | PR comment requests split/by value; `EditComment` → `UpdateComment` | Review-comment writes use GraphQL; reply endpoint `CreateCommentInReplyTo` unchanged. |\n| v91 | Deploy/user/SSH-signing key create requests split/by value | No affected calls. |\n| v91 | Pending deployment/protection review requests by value | No affected calls. |\n| v91 | User impersonation request renamed/by value | No affected calls. |\n| v91 | Team create/update request patterns | No affected writes; reads unchanged. |\n| v91 | Milestone requests split/by value; `EditMilestone` → `UpdateMilestone` | No affected writes. |\n| v91 | Pre-receive hook update gets new value request | No affected calls. |\n| v91 | `Users.Edit` → `Update`, value `UserUpdateRequest` | No affected writes. |\n| v91 | LDAP mapping value requests and non-pointer `LDAPDN` | No affected calls. |\n| v91 | Go 1.26 minimum and deprecated pointer helpers | Go 1.26.8 already satisfies minimum; retain supported helpers with narrow lint compatibility exclusion. |\n| v92 | Codespaces requests renamed/by value; user-create repository ID `*int64` | No Codespaces calls. |\n| v92 | Dependency graph snapshot request renamed with pointer/value changes | No snapshot submission; dependency/SBOM reads unchanged. |\n| v92 | Enterprise budget listing pagination options | No affected calls. |\n| v92 | Commit comment create/update requests split/by value | No affected calls. |\n| v92 | Rules-list branch escaping added internally (behavioral fix) | Remove caller escaping to keep URLs identical for `/`, `#`, `%`. Upstream environment/package escaping fixes do not overlap caller-side escaping here. |\n\n**Pinned-revision compatibility:** [Comparison of `34349a88bac3` with v92](https://github.com/google/go-github/compare/34349a88bac3...v92.0.0) reports v92 ahead by 70 commits and behind by zero, confirming it includes the entire pinned revision. In particular, semantic issue search still uses `SearchOptions.SearchType = \"semantic\"` (added at the pinned commit), Projects v2 APIs remain present, and already-migrated issue/PR request types remain supported. Existing semantic-search, Projects, and issue/PR tests pass.\n\n## MCP impact\n<!-- Select one or more. If selected, add 1–2 sentences. -->\n- [x] No tool or API changes\n  MCP names, schemas, minimal output shapes, aliases, and protocol behavior are unchanged. Toolsnaps pass without updates and generated docs have no diff. This describes the MCP API: exported **Go library** signatures referencing go-github necessarily now use v92 types; downstream Go consumers must migrate imports too.\n- [ ] Tool schema or behavior changed\n- [ ] New tool added\n\n## Prompts tested (tool changes only)\n<!-- If you changed or added tools, list example prompts you tested. -->\n<!-- Include prompts that trigger the tool and describe the use case. -->\n<!-- Example: \"List all open issues in the repo assigned to me\" -->\n- N/A: no tool contract changes. Mocked handlers cover comment creation/updating, reactions, validation, API errors, and branch escaping. Live PAT-backed e2e prompts were not run; e2e code was compile-checked.\n\n## Security / limits\n<!-- Select if relevant. Add a short note if checked. -->\n- [x] No security or limits impact\n  No application auth, permission, filtering, or size-limit logic changes. Existing branch-path escaping is preserved by letting v92 perform it exactly once; upstream HTTP response-body cleanup fixes are also included.\n- [ ] Auth / permissions considered\n- [ ] Data exposure, filtering, or token/size limits considered\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go` \n- [x] I am not renaming tools as part of this PR\n  Tool names and aliases are unchanged.\n\nNote: if you're renaming tools, you *must* add the tool aliases. For more information on how to do so, please refer to the [official docs](https://github.com/github/github-mcp-server/blob/main/docs/tool-renaming.md).\n\n## Lint & tests\n<!-- Check what you ran. If not run, explain briefly. -->\n- [x] Linted locally with `./script/lint`\n  `GOTOOLCHAIN=go1.26.8 script/lint` — passed, 0 issues, repository-pinned golangci-lint v2.9.0.\n- [x] Tested locally with `./script/test`\n  `GOTOOLCHAIN=go1.26.8 script/test` — passed, full `go test -race ./...`, including toolsnaps.\n\nAdditional validation:\n- `GOTOOLCHAIN=go1.26.8 go mod tidy` — passed; only go-github dependency/checksums changed.\n- `GOTOOLCHAIN=go1.26.8 script/generate-docs` — passed; `git diff --exit-code -- README.md docs pkg/github/__toolsnaps__` — passed, unchanged.\n- `CI=true GOTOOLCHAIN=go1.26.8 script/licenses` — passed for all eight platform/architecture combinations.\n- `CI=true GOTOOLCHAIN=go1.26.8 script/licenses-check` — passed against committed license files for all platforms.\n- `GOTOOLCHAIN=go1.26.8 go build ./cmd/github-mcp-server ./cmd/mcpcurl` — passed.\n- `GOTOOLCHAIN=go1.26.8 go test -tags e2e ./e2e -run '^$'` — passed (compilation only; live e2e not run).\n- `git diff --check` — passed.\n\n## Docs\n\n- [x] Not needed\n  Tool docs/snapshots remain unchanged after regeneration; dependency attribution is updated.\n- [ ] Updated (README / docs / examples)",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T10:19:44Z"
+            }
+          },
+          {
+            "number": 3380,
+            "title": "build: upgrade golangci-lint to v2.14.0",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3380",
+            "created_at": "2026-10-02T09:25:24Z",
+            "body": "<!--\nCopilot: Fill all sections. Prefer short, concrete answers.\nIf a checkbox is selected, add a brief explanation.\n-->\n\n## Summary\n<!-- In 1–2 sentences: what does this PR do? -->\nUpgrade all golangci-lint pins from v2.9.0 to v2.14.0, the latest stable 2.x release, and resolve new findings without changing tool names, schemas, behavior, or outputs. Lint and race tests pass on Go 1.26.8 and Go 1.27.1.\n\n## Why\n<!-- Why is this change needed? Link issues or discussions. -->\nFollow-up to #3370, which deferred this upgrade due to findings in existing code. v2.14.0 reads Go 1.27 export data successfully, so the old documented workaround is obsolete.\n\n## What changed\n<!-- Bullet list of concrete changes. -->\n- Pin v2.14.0 in `script/lint`, the lint workflow, and contributor guidance; refresh cached local linter binaries when their version differs from the pin.\n- Apply equivalent modernization fixes, add narrow justified suppressions, and remove obsolete Go 1.27 compatibility guidance.\n\nDefault-output baseline runs reported 28 findings due to repeated-issue caps. Uncapped runs (`--max-issues-per-linter 0 --max-same-issues 0`) found **36 findings**, identical on both requested toolchains:\n\n| Linter | Rule | Go 1.26.8 | Go 1.27.1 | Resolution |\n|---|---|---:|---:|---|\n| gosec | G101 | 7 | 7 | Narrow literal-scoped suppressions in token extraction, PAT scope and scope challenge tests: synthetic fixtures cannot authenticate; values and behavior preserved. |\n| gosec | G117 | 2 | 2 | Line-scoped suppressions for intentional secret-scanning alert serialization: existing `security_events` scope requirements and private-untrusted IFC labels remain intact. |\n| gosec | G602 | 1 | 1 | Line-scoped suppression documents the resolver invariant: exactly one field per input name in order, or an error, proving the index is in bounds. |\n| gosec | G705 | 2 | 2 | Line-scoped suppressions in ETag/user-agent test servers: intentional echoes verify isolation; no browser consumes these responses. |\n| gosec | G710 | 1 | 1 | Line-scoped suppression in fake OAuth server: redirects to the test client's callback, not external user input. |\n| modernize | errorsastype | 12 | 12 | Equivalent `errors.AsType` checks for API and project resolution errors. |\n| modernize | reflecttypeassert | 1 | 1 | Equivalent `reflect.TypeAssert` for batch mutation results, retaining failed-assertion handling. |\n| modernize | atomictypes | 4 | 4 | Equivalent `atomic.Int32` Add/Load operations in project batch and ETag tests. |\n| modernize | slicesbackward | 1 | 1 | `slices.Backward` preserves reverse middleware wrapping order. |\n| staticcheck | QF1012 | 4 | 4 | `fmt.Fprintf` writes directly into strings.Builder; formatted text unchanged. |\n| staticcheck | SA1019 | 1 | 1 | Line-scoped suppression: AST validator intentionally scans all source regardless of build tags without loading packages; switching to package loading changes its contract. |\n\n**Rules disabled by this PR: none.** `.golangci.yml` is unchanged; no whole linter is disabled. Existing exclusions/settings (including modernize `newexpr` and staticcheck `QF1008`/`ST1000`) remain unchanged. Each new `nolint` identifies the analyzer rule and concrete justification beside the statement or fixture.\n\n## MCP impact\n<!-- Select one or more. If selected, add 1–2 sentences. -->\n- [x] No tool or API changes\n- [ ] Tool schema or behavior changed\n- [ ] New tool added\n\nNames, schemas, outputs, toolsnaps, and behavior remain unchanged; implementation modernizations are equivalent.\n\n## Prompts tested (tool changes only)\n<!-- If you changed or added tools, list example prompts you tested. -->\n<!-- Include prompts that trigger the tool and describe the use case. -->\n<!-- Example: \"List all open issues in the repo assigned to me\" -->\n- N/A: no tool interface or behavior changes.\n\n## Security / limits\n<!-- Select if relevant. Add a short note if checked. -->\n- [x] No security or limits impact\n- [ ] Auth / permissions considered\n- [ ] Data exposure, filtering, or token/size limits considered\n\nNo runtime authorization, filtering, security policies, or limits change. Suppressions are confined to proven invariants, intentional authorized outputs, and synthetic test fixtures.\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go` \n- [x] I am not renaming tools as part of this PR\n\nNames and aliases are unchanged.\n\nNote: if you're renaming tools, you *must* add the tool aliases. For more information on how to do so, please refer to the [official docs](https://github.com/github/github-mcp-server/blob/main/docs/tool-renaming.md).\n\n## Lint & tests\n<!-- Check what you ran. If not run, explain briefly. -->\n- [x] Linted locally with `./script/lint`\n- [x] Tested locally with `./script/test`\n\nBoth scripts passed on both toolchains. Final lint commands used a session-local TMPDIR to isolate golangci-lint's lock from concurrent workspaces, without bypassing analysis or protections.\n\n| Exact command | Result |\n|---|---|\n| `GOTOOLCHAIN=go1.26.8 TMPDIR=/home/sammorrowdrums/.copilot/session-state/4d0e0c47-9ddb-4caf-820c-e946d7269905/files/tmp script/lint` | Passed: 0 issues |\n| `GOTOOLCHAIN=go1.26.8 script/test` | Passed: full `go test -race ./...` |\n| `GOTOOLCHAIN=go1.27.1 TMPDIR=/home/sammorrowdrums/.copilot/session-state/4d0e0c47-9ddb-4caf-820c-e946d7269905/files/tmp script/lint` | Passed: 0 issues; no export-data failure |\n| `GOTOOLCHAIN=go1.27.1 script/test` | Passed: full `go test -race ./...` |\n| `TMPDIR=/home/sammorrowdrums/.copilot/session-state/4d0e0c47-9ddb-4caf-820c-e946d7269905/files/tmp bin/golangci-lint run --max-issues-per-linter 0 --max-same-issues 0` | Passed: 0 uncapped issues on Go 1.27.1 |\n| `script/generate-docs` | Passed: generated documentation unchanged |\n| `git diff --exit-code -- README.md docs/remote-server.md docs/insiders-features.md docs/feature-flags.md docs/tool-renaming.md pkg/github/__toolsnaps__ .golangci.yml` | Passed: no generated-doc, toolsnap, or linter-config changes |\n| `git diff --check` | Passed |\n\nLive PAT-dependent e2e tests were not run; no live GitHub mutations were needed. Snapshot update mode was not used.\n\n## Docs\n\n- [ ] Not needed\n- [x] Updated (README / docs / examples)\n\nUpdated CONTRIBUTING.md with the v2.14.0 pin and verified Go 1.26/1.27 support, removing obsolete export-data workaround guidance. Generated tool docs are unchanged.",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T10:18:51Z"
+            }
+          },
+          {
+            "number": 3379,
+            "title": "build(ui): upgrade to TypeScript 7 and align the Node 26 toolchain",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3379",
+            "created_at": "2026-10-02T09:22:23Z",
+            "body": "<!--\nCopilot: Fill all sections. Prefer short, concrete answers.\nIf a checkbox is selected, add a brief explanation.\n-->\n\n## Summary\n<!-- In 1–2 sentences: what does this PR do? -->\nUpgrade the UI to native TypeScript 7.0.2 and @types/node 26.6.4. Align CI and local UI requirements with the existing Node 26 Docker build stage.\n\n## Why\n<!-- Why is this change needed? Link issues or discussions. -->\nFollow-up to #3370 for the two deferred UI toolchain upgrades. CI previously selected Node 22 for UI builds and Node 20 for JavaScript CodeQL, while Docker already used Node 26 and the UI types targeted Node 25.\n\nNode 26 is a [supported Current release](https://nodejs.org/en/about/previous-releases), newer than the LTS line; it enters LTS on [October 28, 2026](https://github.com/nodejs/Release/blob/main/schedule.json). It only builds the embedded UI, rather than running the production server. Keeping Docker's major avoids changing its pinned image. Vite 8.3.2 and @vitejs/plugin-react 6.1.1 accept Node 26 through their `>=22.12.0` engine ranges; [actions/setup-node](https://github.com/actions/setup-node#usage) supports reading the engine range from package.json.\n\n## What changed\n<!-- Bullet list of concrete changes. -->\n- Upgrade TypeScript 5.9.3 to the latest stable 7.0.2 and @types/node 25.9.9 to 26.6.4. Update the lockfile, including platform-specific native compiler binaries and matching undici-types.\n- Set UI engines to `^26.0.0`; both setup-node consumers read `ui/package.json`. The Docker UI stage stays on the existing digest-pinned `node:26-alpine` image.\n- Document Node 26 and native compiler commands in CONTRIBUTING.md.\n- [TypeScript 7](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/) ships the native Go-based compiler through the existing `tsc` command. Vite handles transpilation and bundling independently; there is no TypeScript compiler API integration, typescript-eslint, or ts-node dependency blocking TS 7. No TS 6 fallback is needed. Source types and all existing tsconfig options pass unchanged, so no deprecated-option workaround or source edits are required.\n- React, React DOM, @primer/react, @modelcontextprotocol/ext-apps, and all unrelated locked dependencies remain unchanged.\n\n## MCP impact\n<!-- Select one or more. If selected, add 1–2 sentences. -->\n- [x] No tool or API changes\n- [ ] Tool schema or behavior changed\n- [ ] New tool added\n\nOnly the UI build/type-check toolchain and runtime configuration change; MCP schemas and behavior are unchanged.\n\n## Prompts tested (tool changes only)\n<!-- If you changed or added tools, list example prompts you tested. -->\n<!-- Include prompts that trigger the tool and describe the use case. -->\n<!-- Example: \"List all open issues in the repo assigned to me\" -->\n- N/A — no tool changes.\n\n## Security / limits\n<!-- Select if relevant. Add a short note if checked. -->\n- [x] No security or limits impact\n- [ ] Auth / permissions considered\n- [ ] Data exposure, filtering, or token/size limits considered\n\nNo runtime auth, permissions, data exposure, or limits changes. npm audit reports zero vulnerabilities.\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go` \n- [x] I am not renaming tools as part of this PR\n\nNo tools are renamed.\n\nNote: if you're renaming tools, you *must* add the tool aliases. For more information on how to do so, please refer to the [official docs](https://github.com/github/github-mcp-server/blob/main/docs/tool-renaming.md).\n\n## Lint & tests\n<!-- Check what you ran. If not run, explain briefly. -->\n- [x] Linted locally with `./script/lint`\n- [x] Tested locally with `./script/test`\n\nCommands and results:\n- `cd ui && npm ci && npm run typecheck && npm run build && npm audit` — **passed** in the Dockerfile's exact digest-pinned Node image (Node 26.5.0 / npm 11.17.0), because the host has Node 22. All four bundles built; audit found zero vulnerabilities.\n- `GOTOOLCHAIN=go1.26.8 script/lint` — **passed**, zero issues. Used the documented toolchain override for the repository-pinned linter's Go export-data compatibility.\n- `script/test` — **passed**, full Go race-test suite.\n- `docker build --target ui-build -t github-mcp-server-ui-toolchain-check .` — **passed**.\n- `tar -cf - Dockerfile .dockerignore ui/package.json ui/package-lock.json ui/tsconfig.json ui/vite.config.ts ui/src ui/scripts | docker build --target ui-build -t github-mcp-server-ui-toolchain-check -` — **passed** again with a clean context excluding local node_modules.\n- `docker run --rm -w /app/ui github-mcp-server-ui-toolchain-check sh -c 'node --version && npm exec tsc -- --version && npm run typecheck && npm ls typescript @types/node react @primer/react @modelcontextprotocol/ext-apps --depth=0'` — **passed**, confirming compiler 7.0.2 and type checking inside the freshly built Alpine stage.\n- `git diff --check` — **passed**. A structured lockfile comparison confirmed that only TypeScript/native binaries, Node types, undici-types, and root metadata changed.\n\nVite emits an existing advisory about future native config loading and `__dirname`; current builds succeed. That unrelated future migration is not changed here. Live GitHub E2E tests and the complete Docker server image were not run; the requested UI stage was built.\n\n## Docs\n\n- [ ] Not needed\n- [x] Updated (README / docs / examples)\n\nCONTRIBUTING.md now documents the Node 26 and TypeScript 7 UI workflow.",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T10:20:49Z"
+            }
+          },
+          {
+            "number": 3378,
+            "title": "feat(ui): migrate MCP Apps SDK to v2",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3378",
+            "created_at": "2026-10-02T09:21:46Z",
+            "body": "<!--\nCopilot: Fill all sections. Prefer short, concrete answers.\nIf a checkbox is selected, add a brief explanation.\n-->\n\n## Summary\nMigrate the MCP Apps UI from `@modelcontextprotocol/ext-apps` 1.7.5 to 2.0.3 and update its required SDK peers. The MCP Apps wire protocol and rendered behavior are unchanged.\n\n## Why\nFollow-up to #3370, which deferred the ext-apps 2.x migration because of its split SDK peers and TypeScript API changes. No separate issue is linked.\n\n## What changed\n- Upgrade `@modelcontextprotocol/ext-apps` to `^2.0.3`; add required `@modelcontextprotocol/client` 2.x and `zod` 4.2+ peers.\n- Replace the legacy `@modelcontextprotocol/sdk/types.js` `CallToolResult` imports with the SDK 2.x client package. Existing `useApp` initialization and event handlers are compatible; no handler behavior changes are needed.\n- Replace deprecated go-github v92 `Ptr` calls with Go 1.26's built-in `new(expr)`, fixing `govet` inline diagnostics without suppressing checks.\n- Leave React 18.3.x, Primer, TypeScript, and `@types/node` unchanged. The SDK 2.x wire protocol is compatible with existing MCP Apps hosts.\n\n## MCP impact\n- [x] No tool or API changes — the UI dependency/API migration does not change MCP tool definitions, schemas, or server behavior.\n- [ ] Tool schema or behavior changed\n- [ ] New tool added\n\n## Prompts tested (tool changes only)\n<!-- If you changed or added tools, list example prompts you tested. -->\n<!-- Include prompts that trigger the tool and describe the use case. -->\n<!-- Example: \"List all open issues in the repo assigned to me\" -->\n- N/A — no tool changes.\n\n## Security / limits\n- [x] No security or limits impact — `npm audit` reports 0 vulnerabilities.\n- [ ] Auth / permissions considered\n- [ ] Data exposure, filtering, or token/size limits considered\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. as part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go`\n- [x] I am not renaming tools as part of this PR\n\nNote: if you're renaming tools, you *must* add the tool aliases. For more information on how to do so, please refer to the [official docs](https://github.com/github/github-mcp-server/blob/main/docs/tool-renaming.md).\n\n## Lint & tests\n<!-- Check what you ran. If not run, explain briefly. -->\n- [x] Linted locally with `./script/lint` — `GOTOOLCHAIN=go1.26.8 script/lint` passed (0 issues).\n- [x] Tested locally with `./script/test` — `GOTOOLCHAIN=go1.26.8 script/test` passed. Also passed `cd ui && npm ci`, `npm run typecheck`, `npm run build`, and `npm audit` (0 vulnerabilities). No separate browser/host smoke test was performed.\n\n## Docs\n\n- [x] Not needed — no MCP tools or generated documentation changed.\n- [ ] Updated (README / docs / examples)",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T11:07:01Z"
+            }
+          },
+          {
+            "number": 3370,
+            "title": "build(deps): remediate npm alerts and refresh safe dependencies",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3370",
+            "created_at": "2026-10-02T08:49:01Z",
+            "body": "<!--\nCopilot: Fill all sections. Prefer short, concrete answers.\nIf a checkbox is selected, add a brief explanation.\n-->\n\n## Summary\n<!-- In 1–2 sentences: what does this PR do? -->\nFix all nine open Dependabot alerts, refresh compatible Go/UI dependencies and GitHub Actions, and add weekly npm version updates. Keep MCP tool schemas and existing signing compatibility intact.\n\n## Why\n<!-- Why is this change needed? Link issues or discussions. -->\nThe nine medium-severity alerts affect `ui/package-lock.json`:\n\n| Package | Alerts | Fixed version | Advisories |\n| --- | --- | --- | --- |\n| hono | [83](https://github.com/github/github-mcp-server/security/dependabot/83), [84](https://github.com/github/github-mcp-server/security/dependabot/84), [85](https://github.com/github/github-mcp-server/security/dependabot/85), [91](https://github.com/github/github-mcp-server/security/dependabot/91) | 4.13.12 | GHSA-crvj-82cr-hjcx, GHSA-g6gw-c38x-mqfc, GHSA-gqvv-2mrq-wpjv, GHSA-hxh3-vqpv-xpqv |\n| fast-uri | [90](https://github.com/github/github-mcp-server/security/dependabot/90) | 3.1.8 | GHSA-hrr3-gc8f-f4qj |\n| ip-address | [86](https://github.com/github/github-mcp-server/security/dependabot/86), [87](https://github.com/github/github-mcp-server/security/dependabot/87), [88](https://github.com/github/github-mcp-server/security/dependabot/88), [89](https://github.com/github/github-mcp-server/security/dependabot/89) | 10.7.3 | GHSA-2vr4-cq9g-pvrc, GHSA-rpw4-54j3-4h4q, GHSA-h3mg-xc3c-68pw, GHSA-j6r3-76f7-8jcv |\n\nAlerts remain open on `main` until a reviewed update merges and Dependabot rescans.\n\n**Dependabot PRs merged before this change: none.** All eight open PRs require approving reviews and are behind main. No rulesets, protections, reviews or checks were bypassed. Their updates are included here; the original PRs remain open for maintainers to review or supersede:\n\n| Awaiting review | Update | CI at inventory |\n| --- | --- | --- |\n| #3343 | CodeQL Action 4.38.2 | Successful |\n| #3342 | Go Docker digest | Successful |\n| #3319 | setup-buildx-action 4.4.1 | Successful |\n| #3318 | build-push-action 7.4.0 | Successful |\n| #3277 | x/oauth2 0.37.0 | No checks reported |\n| #3276 | MCP Go SDK 1.8.0 | No checks reported |\n| #3257 | hono security update | Successful |\n| #3240 | x/net update (this PR uses 0.59.0) | Successful |\n\n## What changed\n<!-- Bullet list of concrete changes. -->\n- Upgrade MCP Go SDK to stable 1.8.0, GraphQL clients to latest published revisions, x/net to 0.59.0, and x/oauth2 to 0.37.0. Refresh indirect x/sync, x/sys and x/text through `go mod tidy`.\n- Raise the minimum Go version to **1.26.8**: latest x/net requires Go 1.26; 1.26.8 is the current maintenance patch. Lint CI now reads `go.mod` instead of pinning Go 1.25.\n- Adapt the new pointer type of `AddPullRequestReviewThreadInput.Path` and existing mutation fixtures without changing the serialized path or tool contract.\n- Update compatible UI versions and lockfile, including all fixed transitive packages above. No overrides or forced major upgrades.\n- Update CodeQL Action references to 4.38.2, SHA-pinned Docker setup-buildx/build-push to 4.4.1/7.4.0, and the Go Docker image digest. Align the UI composite action with cache v6 / setup-node v7 already used elsewhere.\n- Upgrade Cosign to **2.6.5**, the maintained v2 backport for GHSA-fx35-mq7g-6g98, without changing signature bundle defaults.\n- Add weekly Dependabot `npm` coverage for `/ui`; gomod, github-actions and docker are already covered.\n- Regenerate all platform license reports. License texts, tool snapshots and generated docs remain unchanged. Required gofmt corrects one existing indentation issue.\n- Disable only modernize's `newexpr` style migration to preserve established pointer helpers rather than rewriting the library for Go 1.26. Security lint rules remain enabled.\n\n**Deferred upgrades:**\n\n| Dependency | Latest stable | Reason |\n| --- | --- | --- |\n| go-github | v92.0.0 | v90–v92 require widespread import-path and request-type migrations; retain v89's existing post-release revision with needed API work. No advisory found. |\n| @modelcontextprotocol/ext-apps | 2.0.3 | SDK 2 split peers and breaking TypeScript/handler APIs require a dedicated migration. Use latest compatible 1.7.5. |\n| @primer/react | 38.40.1 | Two major component/API migrations require visual review. Use latest compatible 36.27.0. |\n| react / react-dom | 19.3.0 | Coordinated runtime major migration needs UI behavior review. Retain latest React 18.3.1. |\n| @types/react / @types/react-dom | 19.3.0 | Keep types aligned with React 18; update to 18.3.31 / 18.3.7. |\n| @types/node | 26.6.4 | Defer typing major until runtime policy is unified (CI Node 22, Docker Node 26). Update existing v25 line to 25.9.9. |\n| typescript | 7.0.2 | Compiler major migration needs separate compatibility review. Use latest v5, 5.9.3. |\n| golangci-lint | 2.14.0 | Trial introduced gosec/staticcheck/modernize findings in unchanged code; resolving/suppressing them needs separate review. Retain pinned 2.9.0 on Go 1.26.8 and document its Go 1.27 export-data limitation. |\n| cosign | 3.1.3 | v3 changes default signature bundle format. Use security-fixed 2.6.5 backport to preserve published signature compatibility. |\n\nOther direct Go dependencies are current in their compatible module paths. Libraries without stable tags use their latest published revisions; go-github's existing revision is not downgraded to the older v89.0.0 tag.\n\n## MCP impact\n<!-- Select one or more. If selected, add 1–2 sentences. -->\n- [x] No tool or API changes — tool names, schemas and outputs remain unchanged; existing snapshots pass. MCP SDK 1.8.0 supplies upstream transport/OAuth hardening without changing the supported protocol set.\n- [ ] Tool schema or behavior changed\n- [ ] New tool added\n\n## Prompts tested (tool changes only)\n<!-- If you changed or added tools, list example prompts you tested. -->\n<!-- Include prompts that trigger the tool and describe the use case. -->\n<!-- Example: \"List all open issues in the repo assigned to me\" -->\n- N/A: no tool definition changes. Existing pending-review mutation tests cover the GraphQL adaptation.\n\n## Security / limits\n<!-- Select if relevant. Add a short note if checked. -->\n- [ ] No security or limits impact\n- [x] Auth / permissions considered — preserve auth/signing flows and fix Cosign verification; no protections or reviews bypassed.\n- [x] Data exposure, filtering, or token/size limits considered — upstream MCP transport bounds are retained, with no new configuration overrides. npm audit, govulncheck and the advisory database check found no known vulnerabilities in their checked dependency sets.\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go` \n- [x] I am not renaming tools as part of this PR — all names remain unchanged.\n\nNote: if you're renaming tools, you *must* add the tool aliases. For more information on how to do so, please refer to the [official docs](https://github.com/github/github-mcp-server/blob/main/docs/tool-renaming.md).\n\n## Lint & tests\n<!-- Check what you ran. If not run, explain briefly. -->\n- [x] Linted locally with `./script/lint` — `GOTOOLCHAIN=go1.26.8 TMPDIR=\"$PWD/bin/lint-tmp\" script/lint`: passed, 0 issues. Isolated TMPDIR avoids another session's shared linter lock.\n- [x] Tested locally with `./script/test` — `GOTOOLCHAIN=go1.26.8 script/test`: passed full race suite and unchanged toolsnaps.\n\nAdditional commands/results:\n- `go test -race ./...` on Go 1.27.1: passed.\n- `GOTOOLCHAIN=go1.26.8 go build ./cmd/github-mcp-server ./cmd/mcpcurl`: passed.\n- `GOTOOLCHAIN=go1.26.8 script/generate-docs`: passed; generated docs unchanged.\n- `go mod tidy -diff`: passed; no differences.\n- `cd ui && npm ci --no-fund && npm run typecheck && npm run build && npm audit`: passed; **0 vulnerabilities**.\n- `GOTOOLCHAIN=go1.26.8 go run golang.org/x/vuln/cmd/govulncheck@latest ./...`: passed; no vulnerabilities found.\n- `go run golang.org/x/vuln/cmd/govulncheck@latest -scan package ./...` on Go 1.27.1: passed; no vulnerabilities found, including imported but unreachable dependencies.\n- GitHub `check_dependency_vulnerabilities`: passed; 0 vulnerable of 8 selected versions, including fixed npm packages and Cosign 2.6.5.\n- `script/licenses` and `script/licenses-check`: passed for all platforms; reports regenerated and reproducible.\n- `actionlint -oneline -ignore 'property \"code_scanning_.*\" is not defined' -ignore 'label \"ubuntu-latest-xl\" is unknown'`: passed. Unfiltered actionlint reports only existing organization-injected CodeQL inputs/custom runner labels, not changes here.\n- `git diff origin/main --check`: passed.\n\nLive PAT-based e2e tests, Docker builds and release signing were not run (no credentials/container runtime available). Hosted checks must pass before merge.\n\n## Docs\n\n- [ ] Not needed\n- [x] Updated (README / docs / examples) — CONTRIBUTING documents the new Go minimum and pinned-linter toolchain; generated tool docs remain unchanged.",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T09:09:33Z"
+            }
+          },
+          {
+            "number": 3357,
+            "title": "Use source revisions for non-release Docker builds",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3357",
+            "created_at": "2026-10-01T10:39:26Z",
+            "body": "## Summary\n\nUse release-tag versions only for tagged Docker builds, so branch, nightly and pull-request builds identify their full source revision.\n\n## Why\n\nAs part of improving GraphQL observability to service teams, as well as improving our GraphQL Platform team's own observability of the platform at large, we want client services to clearly identify themselves with their service name and version. This helps us clearly attribute traffic, which aids incident troubleshooting and performance investigations.\n\nFollow-up to https://github.com/github/github-mcp-server/pull/3323: branch names such as `main` were being supplied as release versions, taking precedence over the available commit SHA.\n\n## What changed\n\nGate the Docker `VERSION` build argument on the ref type and document the build behaviour.\n\n## MCP impact\n\n- [x] No tool or API changes. Header construction and runtime fallback logic are unchanged.\n\n## Prompts tested (tool changes only)\n\nNot applicable; no tool changes.\n\n## Security / limits\n\n- [x] No security or limits impact. Authentication and permissions are unchanged.\n\n## Tool renaming\n\n- [x] I am not renaming tools as part of this PR.\n\n## Lint & tests\n\n- [x] Linted in the Codespace with `./script/lint`.\n- [x] Tested in the Codespace with `./script/test`.\n\nOffline checks of the actual workflow expression and resulting compiled-binary headers passed. Container image publication was not exercised.\n\n## Docs\n\n- [x] Updated README build-attribution documentation.\n",
+            "user": {
+              "login": "jidicula",
+              "type": "User",
+              "html_url": "https://github.com/jidicula"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-01T15:31:37Z"
+            }
+          },
+          {
+            "number": 3355,
+            "title": "fix(pull_request_reviews): Update pending pull request review lookup to work when the authenticated actor is a Copilot bot",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3355",
+            "created_at": "2026-09-30T14:26:12Z",
+            "body": "## Summary\r\n\r\nPull request review tools which pull the current pending review for the user don't work when authenticated with a Copilot installation (server-to-server/S2S) token.\r\n\r\nThis fixes it by changing how we pull the current pending review to to be more resilient to the specific implementation of Copilot bots.\r\n\r\n## Why\r\n\r\nMany of our pull request review tools rely on using the GitHub GraphQL API to look up the current pending review:\r\n\r\n* add_comment_to_pending_review / add_pull_request_review_comment\r\n* submit_pending / submit_pending_pull_request_review\r\n* delete_pending / delete_pending_pull_request_review\r\n\r\nUnder the hood, we do this by fetching the current `viewer.login` and then fetching reviewers where the `author` matches that login.\r\n\r\nThis is currently broken for Copilot bots. When authenticated as Copilot cloud agent, the GraphQL API reports `Copilot` for `viewer.login`, but this isn't the bot's _real_ login.\r\n\r\nThe real login is `copilot-swe-agent` (the bot identity represented as `copilot-swe-agent[bot]` elsewhere). \r\n\r\nFiltering the reviews connection with the reported viewer login therefore returns no pending review, so adding comments, submitting, and deleting pending reviews fail.\r\n\r\nGraphQL node IDs are stable across those representations, so they are a more reliable identity key.\r\n\r\nNo linked issue.\r\n\r\n## What changed\r\n\r\n- Query `viewer.id` instead of `viewer.login`.\r\n- Load `PENDING` reviews without an author-login filter, paginate them, and select the first review whose author node ID matches the viewer node ID.\r\n- Select IDs through concrete `Actor` fragments because the interface does not expose `id`; compare only globally unique node IDs because this token presents the viewer as `User` and the review author as `Bot`.\r\n- Share the lookup across comment, submit, and delete operations, with coverage that skips another user's pending review before selecting the viewer's review.\r\n\r\n## MCP impact\r\n\r\n- [ ] No tool or API changes\r\n- [x] Tool schema or behavior changed\r\n- [ ] New tool added\r\n\r\nThe schemas are unchanged. The existing pending-review operations now work when the authenticated viewer's reported login does not match the review author's real login.\r\n\r\n## Prompts tested (tool changes only)\r\n\r\n- \"Add this comment to my pending review.\"\r\n- \"Submit my pending review as a comment.\"\r\n- \"Delete my pending review.\"\r\n\r\nLive validation on this draft used the built MCP server over stdio to create a pending review, add a line comment, and submit it. The old `author: \"Copilot\"` query returned no review, while the new query matched viewer and author node ID `BOT_kgDOC9w8XQ`.\r\n\r\n## Security / limits\r\n\r\n- [ ] No security or limits impact\r\n- [x] Auth / permissions considered\r\n- [x] Data exposure, filtering, or token/size limits considered\r\n\r\nThe API currently returns only the viewer's own pending reviews, but the client still matches author ID defensively in case that behavior changes. Results are fetched in pages of 100 and stop as soon as the viewer's review is found.\r\n\r\n## Tool renaming\r\n\r\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\r\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go`\r\n- [x] I am not renaming tools as part of this PR\r\n\r\n## Lint & tests\r\n\r\n- [ ] Linted locally with `./script/lint`\r\n- [x] Tested locally with `./script/test`\r\n\r\n`gofmt -s`, `go vet ./...`, focused tests, the full race-enabled test suite, and the live MCP create/comment/submit flow pass. `./script/lint` could not install `golangci-lint` because its installer host is blocked in this environment; running the pinned linter through Go modules reached a Go export-data compatibility error.\r\n\r\n## Docs\r\n\r\n- [x] Not needed\r\n- [ ] Updated (README / docs / examples)\r\n",
+            "user": {
+              "login": "Copilot",
+              "type": "Bot",
+              "html_url": "https://github.com/apps/copilot-swe-agent"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-02T07:44:02Z"
+            }
+          },
+          {
+            "number": 3350,
+            "title": "Add granular tools to hide and unhide issue comments, PR review comments and PR reviews",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3350",
+            "created_at": "2026-09-30T00:09:06Z",
+            "body": "## Summary\nAdds granular tools to hide (minimize) and unhide (unminimize) comments on issues and pull requests, using the GraphQL `minimizeComment` / `unminimizeComment` mutations. There is one pair per object type, behind the `issues_granular` and `pull_requests_granular` feature flags.\n\n## Why\nThe server has no way to hide spam, off-topic, outdated or resolved comments. Hiding is only available through GraphQL; REST has no equivalent. Related: #3321 / #3329, which surface `minimized_reason` when reading comments.\n\n## What changed\n| Tools | Toolset / flag | Hides | Arguments (all required) |\n|---|---|---|---|\n| `hide_issue_comment` / `unhide_issue_comment` | `issues` / `issues_granular` | Issue comments and PR conversation comments (both are issue comments in the API) | `owner`, `repo`, `comment_id` |\n| `hide_pull_request_review_comment` / `unhide_pull_request_review_comment` | `pull_requests` / `pull_requests_granular` | Inline PR diff comments | `owner`, `repo`, `comment_id` |\n| `hide_pull_request_review` / `unhide_pull_request_review` | `pull_requests` / `pull_requests_granular` | PR review bodies | `owner`, `repo`, `pullNumber`, `review_id` |\n\n- The `hide_*` tools also require `classifier` (`SPAM`, `ABUSE`, `OFF_TOPIC`, `OUTDATED`, `DUPLICATE`, `RESOLVED`, `LOW_QUALITY`).\n- There are no conditional arguments: every property in every schema is required.\n- Callers pass the numeric REST IDs returned by the existing read tools. Each tool fetches the matching REST resource to get its GraphQL `node_id`, then runs the mutation. It returns `{node_id, is_minimized, minimized_reason}`.\n- All six tools are built by one helper in `pkg/github/comment_minimize.go`, parameterised by a `commentVisibilityTarget` for each object type. The exported constructors (`GranularHideIssueComment`, etc.) are one-liners in `issues_granular.go` and `pullrequests_granular.go`.\n- Argument names follow the neighbouring granular tools: `comment_id` as in the reaction tools, and `pullNumber` as in the other PR tools.\n- Toolsnaps, the granular toolset tests and `docs/feature-flags.md` are updated.\n\n## MCP impact\n- [ ] No tool or API changes\n- [ ] Tool schema or behavior changed\n- [x] New tool added\n\nSix new write tools, each visible only when its feature flag is enabled.\n\n## Prompts tested (tool changes only)\n- \"Hide the last comment on issue #42 as spam\"\n- \"Hide the review comments on PR #7 that have been addressed as resolved\"\n- \"Hide the outdated review summary on PR #7\"\n- \"Unhide the comment I accidentally hid on issue #42\"\n\n**End-to-end test against the live API:** I built the server and ran it over stdio with `--toolsets issues,pull_requests --features issues_granular,pull_requests_granular`, driven by a small MCP client. It created real content on #3351 (a temporary test issue) and on this PR. It called each hide tool and then the matching unhide tool, and checked `isMinimized` / `minimizedReason` with an independent GraphQL query after each call:\n\n| Object | Tools | Classifier | Hide | Unhide |\n|---|---|---|---|---|\n| Issue comment | `hide_issue_comment` / `unhide_issue_comment` | `SPAM` | ✅ | ✅ |\n| PR conversation comment | `hide_issue_comment` / `unhide_issue_comment` | `OFF_TOPIC` | ✅ | ✅ |\n| PR review (inline) comment | `hide_pull_request_review_comment` / `unhide_…` | `OUTDATED` | ✅ | ✅ |\n| PR review body | `hide_pull_request_review` / `unhide_…` | `RESOLVED` | ✅ | ✅ |\n\nError cases also behaved correctly against the live API, with no side effects:\n- An issue comment ID passed to the review comment tool, and the reverse, both return a clear 404 error.\n- A review ID with the wrong `pullNumber` returns 404.\n- A missing `pullNumber` is rejected before any API call.\n- An invalid classifier is rejected by GraphQL, and the comment is left unchanged.\n\nEach flag was also checked to expose exactly its own tools: no flags gives none, `issues_granular` gives the issue pair, and `pull_requests_granular` gives the four PR tools.\n\nThe test comments have been deleted and #3351 is closed. One test review stays on this PR with its body edited, because GitHub doesn't allow deleting submitted reviews.\n\n## Security / limits\n- [ ] No security or limits impact\n- [x] Auth / permissions considered\n- [ ] Data exposure, filtering, or token/size limits considered\n\nRequires the `repo` scope, like the other granular write tools. GitHub itself enforces that the caller has triage/write access or is the author; permission errors from the mutation are returned as tool errors.\n\n## Tool renaming\n- [ ] I am renaming tools as part of this PR (e.g. a part of a consolidation effort)\n   - [ ] I have added the new tool aliases in `deprecated_tool_aliases.go` \n- [x] I am not renaming tools as part of this PR\n\n## Lint & tests\n- [x] Linted locally with `./script/lint`\n- [x] Tested locally with `./script/test`\n\nLint was run with Go 1.25 and golangci-lint v2.9.0 to match CI. The table-driven unit tests cover the following, and the new code has 90–100% statement coverage:\n- hide and unhide for all three object types\n- not-found for each object type\n- a response with no node ID\n- mutation failures\n- each missing required argument\n\n## Docs\n\n- [ ] Not needed\n- [x] Updated (README / docs / examples)\n\n`docs/feature-flags.md` was regenerated with `script/generate-docs`. The README is unchanged because flag-gated tools aren't listed there.\n",
+            "user": {
+              "login": "timrogers",
+              "type": "User",
+              "html_url": "https://github.com/timrogers"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-01T19:01:50Z"
+            }
+          },
+          {
+            "number": 3348,
+            "title": "Always enable MCP Apps UI; remove remote_mcp_ui_apps flag gate",
+            "html_url": "https://github.com/github/github-mcp-server/pull/3348",
+            "created_at": "2026-09-29T14:05:33Z",
+            "body": "## Why\n\nThe `remote_mcp_ui_apps` feature flag is at 100% rollout on the hosted (remote) server, so MCP Apps is always on in production. In this repo it was still off by default unless enabled through `--features`/`X-MCP-Features` or insiders mode. This PR removes that difference so the OSS server matches the shipped remote behavior.\n\n## What changed\n\n- **Inventory:** `_meta.ui` is now always emitted. It's stripped only when the client explicitly doesn't advertise the `io.modelcontextprotocol/ui` capability, which is the spec-conformant check. The flag branch is gone from `ToolsForRegistration`, `shouldStripMCPAppsMetadata` and `RequiredFeatures`, and `mcpAppsFeatureFlag` is deleted.\n- **`ui_get`:** no longer feature-gated. It is app-only (`_meta.ui.visibility: [\"app\"]`), so for clients without the UI capability, app-only tools are now left out entirely. Previously, stripping `_meta.ui` would have exposed it as an ordinary model-visible tool.\n- **Form deferral:** `shouldDeferToForm` no longer checks `remote_mcp_ui_apps`. Write tools hand off to their MCP App form by default for UI-capable clients. `mcp_apps_disable_form_deferral` is unchanged and remains the long-lived opt-out.\n- **Feature flags:** removed `MCPAppsFeatureFlag` and its entries in `AllowedFeatureFlags` and `InsidersFeatureFlags`. `featureEnabledRule`/`featureDisabledRule` stay because other flags use them.\n- **Tests:** updated for the new defaults, plus new tests showing app-only tools (including the real `ui_get`) are left out for clients without UI support and kept when support is present or unknown.\n- **Docs:** regenerated with `script/generate-docs`, so the README now lists the MCP App UI URIs and `ui_get`, and the `remote_mcp_ui_apps` sections are gone from `feature-flags.md`/`insiders-features.md`. The MCP Apps section in `server-configuration.md` now says MCP Apps is always on.\n\n## Follow-up for github/github-mcp-server-remote\n\nAfter this merges, github/github-mcp-server-remote should:\n- bump its `github-mcp-server` dependency to pick this up;\n- update the tests that reference the now-deleted `githubMcp.MCPAppsFeatureFlag` (`internal/featureflags/flags_test.go`, `pkg/mcp/inventory/inventory_test.go`);\n- drop the stale `remote_mcp_ui_apps` comment in `internal/featureflags/flags.go`.\n",
+            "user": {
+              "login": "SamMorrowDrums",
+              "type": "User",
+              "html_url": "https://github.com/SamMorrowDrums"
+            },
+            "performed_via_github_app": null,
+            "pull_request": {
+              "merged_at": "2026-10-01T13:54:20Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "path": "/repos/github/github-mcp-server/rules/branches/main",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "29",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "type": "copilot_code_review",
+          "parameters": {
+            "review_on_push": false,
+            "review_draft_pull_requests": false
+          },
+          "ruleset_source_type": "Organization",
+          "ruleset_source": "github",
+          "ruleset_id": 8039397
+        },
+        {
+          "type": "license_compliance_scanning",
+          "ruleset_source_type": "Organization",
+          "ruleset_source": "github",
+          "ruleset_id": 9615821
+        },
+        {
+          "type": "deletion",
+          "ruleset_source_type": "Repository",
+          "ruleset_source": "github/github-mcp-server",
+          "ruleset_id": 4531665
+        },
+        {
+          "type": "non_fast_forward",
+          "ruleset_source_type": "Repository",
+          "ruleset_source": "github/github-mcp-server",
+          "ruleset_id": 4531665
+        },
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 1,
+            "dismiss_stale_reviews_on_push": true,
+            "required_reviewers": [],
+            "require_code_owner_review": true,
+            "dismissal_restriction": {
+              "enabled": false,
+              "allowed_actors": []
+            },
+            "require_last_push_approval": true,
+            "required_review_thread_resolution": false,
+            "ignore_approvals_from_contributors": false,
+            "require_extra_approval_for_unattributed_changes": true,
+            "allowed_merge_methods": ["squash", "rebase"]
+          },
+          "ruleset_source_type": "Repository",
+          "ruleset_source": "github/github-mcp-server",
+          "ruleset_id": 4531665
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "lint",
+                "integration_id": 15368
+              },
+              {
+                "context": "build",
+                "integration_id": 15368
+              },
+              {
+                "context": "build (macos-latest)",
+                "integration_id": 15368
+              },
+              {
+                "context": "build (ubuntu-latest)",
+                "integration_id": 15368
+              },
+              {
+                "context": "build (windows-latest)",
+                "integration_id": 15368
+              },
+              {
+                "context": "CodeQL",
+                "integration_id": 57789
+              }
+            ]
+          },
+          "ruleset_source_type": "Repository",
+          "ruleset_source": "github/github-mcp-server",
+          "ruleset_id": 4531665
+        },
+        {
+          "type": "code_scanning",
+          "parameters": {
+            "code_scanning_tools": [
+              {
+                "tool": "CodeQL",
+                "security_alerts_threshold": "high_or_higher",
+                "alerts_threshold": "errors"
+              }
+            ]
+          },
+          "ruleset_source_type": "Repository",
+          "ruleset_source": "github/github-mcp-server",
+          "ruleset_id": 4531665
+        },
+        {
+          "type": "copilot_code_review",
+          "ruleset_source_type": "Repository",
+          "ruleset_source": "github/github-mcp-server",
+          "ruleset_id": 4531665
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3348/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "28",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-09-29T14:05:34Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-09-29T14:05:34Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-09-29T14:06:15Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-09-29T14:09:06Z",
+          "commit_id": "19e25155fa99a0cfc73e18093ad6d177de79ad32"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "tommaso-moro",
+            "type": "User",
+            "html_url": "https://github.com/tommaso-moro"
+          },
+          "state": "approved",
+          "submitted_at": "2026-09-29T21:33:51Z",
+          "commit_id": "d8d2c7127d04b2644e21c4d5f13c7ecec5a2ad28"
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-09-29T21:34:08Z",
+          "actor": {
+            "login": "tommaso-moro",
+            "type": "User",
+            "html_url": "https://github.com/tommaso-moro"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "tommaso-moro",
+            "type": "User",
+            "html_url": "https://github.com/tommaso-moro"
+          },
+          "state": "approved",
+          "submitted_at": "2026-10-01T10:16:05Z",
+          "commit_id": "d8d2c7127d04b2644e21c4d5f13c7ecec5a2ad28"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-01T13:54:20Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "63f559545320fa72eaf184c4a42e05904c09e817"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-01T13:54:20Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-01T13:54:23Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-01T20:13:49Z",
+          "actor": {
+            "login": "BrewTestBot",
+            "type": "User",
+            "html_url": "https://github.com/BrewTestBot"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-08T10:33:31Z",
+          "actor": {
+            "login": "LIdzkowski-pns",
+            "type": "User",
+            "html_url": "https://github.com/LIdzkowski-pns"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-08T10:35:43Z",
+          "actor": {
+            "login": "LIdzkowski-pns",
+            "type": "User",
+            "html_url": "https://github.com/LIdzkowski-pns"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-08T11:22:53Z",
+          "actor": {
+            "login": "amunoz-ldr",
+            "type": "User",
+            "html_url": "https://github.com/amunoz-ldr"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3357/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "27",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-01T11:37:43Z",
+          "actor": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-01T11:38:21Z",
+          "actor": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-01T11:39:12Z",
+          "commit_id": "71f3e8a6fb03cba18da401ee976774618908e48c"
+        },
+        {
+          "event": "assigned",
+          "created_at": "2026-10-01T11:46:43Z",
+          "actor": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          }
+        },
+        {
+          "event": "unassigned",
+          "created_at": "2026-10-01T11:54:24Z",
+          "actor": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          }
+        },
+        {
+          "event": "head_ref_force_pushed",
+          "created_at": "2026-10-01T11:54:59Z",
+          "actor": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          }
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-10-01T12:02:09Z",
+          "actor": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-01T12:02:10Z",
+          "actor": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "state": "approved",
+          "submitted_at": "2026-10-01T15:31:22Z",
+          "commit_id": "158205d6229ad0d20253d10f5980aada722aae42"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-01T15:31:37Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "a1f6500450302da817537cbad58e440ec4bb5a24"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-01T15:31:37Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-01T15:31:39Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-01T20:13:49Z",
+          "actor": {
+            "login": "BrewTestBot",
+            "type": "User",
+            "html_url": "https://github.com/BrewTestBot"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3348/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "26",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "19e25155fa99a0cfc73e18093ad6d177de79ad32",
+          "html_url": "https://github.com/github/github-mcp-server/commit/19e25155fa99a0cfc73e18093ad6d177de79ad32",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-09-29T13:24:44Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-09-29T13:24:44Z"
+            },
+            "message": "Always enable MCP Apps UI; remove remote_mcp_ui_apps flag gate\n\nThe remote_mcp_ui_apps flag is fully rolled out on the hosted server, but\nthe OSS server still defaulted it off. Make MCP Apps unconditional:\n\n- _meta.ui is always emitted, stripped only when the client explicitly\n  does not advertise the io.modelcontextprotocol/ui capability\n- ui_get is always registered\n- write tools defer to MCP App forms by default (still opt-out via\n  mcp_apps_disable_form_deferral)\n- remove MCPAppsFeatureFlag and its AllowedFeatureFlags/InsidersFeatureFlags\n  entries\n- update tests and regenerate docs\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "85598ba6e1256f7ebf4867b95d63b833c4549264"
+            }
+          ]
+        },
+        {
+          "sha": "55a343f7d387845a6b8f55f2624db804ceb29078",
+          "html_url": "https://github.com/github/github-mcp-server/commit/55a343f7d387845a6b8f55f2624db804ceb29078",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-09-29T14:15:31Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-09-29T14:15:31Z"
+            },
+            "message": "Remove unused Inventory.checkFeatureFlag\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "19e25155fa99a0cfc73e18093ad6d177de79ad32"
+            }
+          ]
+        },
+        {
+          "sha": "d8d2c7127d04b2644e21c4d5f13c7ecec5a2ad28",
+          "html_url": "https://github.com/github/github-mcp-server/commit/d8d2c7127d04b2644e21c4d5f13c7ecec5a2ad28",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-09-29T14:43:41Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-09-29T14:43:41Z"
+            },
+            "message": "Omit app-only tools for clients without MCP Apps support\n\nWhen a client does not advertise io.modelcontextprotocol/ui, stripping\n_meta.ui from ui_get turned it into an ordinary model-visible tool,\nviolating its app-only contract. Now that ui_get is no longer feature\ngated, omit tools whose ui.visibility excludes \"model\" instead.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "55a343f7d387845a6b8f55f2624db804ceb29078"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3357/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "25",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "158205d6229ad0d20253d10f5980aada722aae42",
+          "html_url": "https://github.com/github/github-mcp-server/commit/158205d6229ad0d20253d10f5980aada722aae42",
+          "commit": {
+            "author": {
+              "name": "Johanan",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-01T10:36:26Z"
+            },
+            "committer": {
+              "name": "Johanan",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-01T10:36:26Z"
+            },
+            "message": "Use source revisions for non-release Docker builds\n\nOnly tag builds should supply a release version. Other Docker builds use the existing linked-commit fallback instead of treating a branch or pull-request ref name as a release.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\nCopilot-Session: 6dde41da-ec25-4370-b26c-b036d0a53b3c"
+          },
+          "author": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          },
+          "committer": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          },
+          "parents": [
+            {
+              "sha": "5a1a3866d4a681d771162d35680d6c7219eac3b0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3350/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "24",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "renamed",
+          "created_at": "2026-09-30T00:39:31Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-09-30T01:08:44Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-09-30T01:08:45Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-09-30T01:08:45Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-09-30T01:09:23Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-09-30T01:13:01Z",
+          "commit_id": "d6eebd1aaa481b1e735f738f8b2952d046913f6a"
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-09-30T01:20:09Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "state": "commented",
+          "submitted_at": "2026-09-30T01:20:12Z",
+          "commit_id": "d6eebd1aaa481b1e735f738f8b2952d046913f6a"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "renamed",
+          "created_at": "2026-09-30T04:27:42Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "renamed",
+          "created_at": "2026-09-30T04:28:21Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "state": "approved",
+          "submitted_at": "2026-10-01T19:01:30Z",
+          "commit_id": "04359ff4539679e72cbb1cfbd19dca42b4f0ca78"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-01T19:01:50Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "85b0399bf214f24f5028d9cedecdd020f646c822"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-01T19:01:50Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-01T19:01:53Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-01T20:13:49Z",
+          "actor": {
+            "login": "BrewTestBot",
+            "type": "User",
+            "html_url": "https://github.com/BrewTestBot"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-09T05:44:43Z",
+          "actor": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3355/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "23",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-swe-agent"
+          },
+          "state": "commented",
+          "submitted_at": "2026-09-30T14:33:14Z",
+          "commit_id": "a3c2e90b6817a266aa38516e54e58c8d207bc704"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-09-30T15:00:38Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-09-30T15:00:39Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-09-30T15:00:40Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-09-30T15:01:23Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "renamed",
+          "created_at": "2026-09-30T15:01:24Z",
+          "actor": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-09-30T15:02:51Z",
+          "commit_id": "3e7802c5555673e1577caaddc25a73760b5a56da"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "state": "approved",
+          "submitted_at": "2026-09-30T15:24:57Z",
+          "commit_id": "65ded23d4e79975e7e77bb8e2c2f1c00f1656123"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "state": "approved",
+          "submitted_at": "2026-10-01T18:39:05Z",
+          "commit_id": "65ded23d4e79975e7e77bb8e2c2f1c00f1656123"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T07:44:02Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "38cb0c445dd90d5151001aca07bd33f68017e484"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T07:44:02Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T07:44:05Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-06T08:33:02Z",
+          "actor": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-09T05:44:43Z",
+          "actor": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3350/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "22",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "cb334bd3b636ba679c6c2f0f864e9c4cd9e6cdad",
+          "html_url": "https://github.com/github/github-mcp-server/commit/cb334bd3b636ba679c6c2f0f864e9c4cd9e6cdad",
+          "commit": {
+            "author": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T00:08:47Z"
+            },
+            "committer": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T00:08:47Z"
+            },
+            "message": "Add hide_comment and unhide_comment granular issue tools\n\nAdd two tools behind the issues_granular feature flag that hide\n(minimize) and unhide (unminimize) comments via the GraphQL\nminimizeComment/unminimizeComment mutations.\n\nThey support issue and pull request conversation comments, pull\nrequest review comments, and pull request review bodies. Callers\npass the numeric REST ID plus a comment_type; the tool resolves the\nGraphQL node ID via the matching REST endpoint before mutating.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "committer": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "parents": [
+            {
+              "sha": "85598ba6e1256f7ebf4867b95d63b833c4549264"
+            }
+          ]
+        },
+        {
+          "sha": "d6eebd1aaa481b1e735f738f8b2952d046913f6a",
+          "html_url": "https://github.com/github/github-mcp-server/commit/d6eebd1aaa481b1e735f738f8b2952d046913f6a",
+          "commit": {
+            "author": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T00:51:06Z"
+            },
+            "committer": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T00:51:06Z"
+            },
+            "message": "Rename comment_type enum values to pull_request_review(_comment)\n\nUse `pull_request_review` and `pull_request_review_comment` instead of\n`review` and `review_comment` so the comment_type values are explicit\nabout which object they refer to.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "committer": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "parents": [
+            {
+              "sha": "cb334bd3b636ba679c6c2f0f864e9c4cd9e6cdad"
+            }
+          ]
+        },
+        {
+          "sha": "27c0dd5cf0692d0f9f5d593c26743060f488d72c",
+          "html_url": "https://github.com/github/github-mcp-server/commit/27c0dd5cf0692d0f9f5d593c26743060f488d72c",
+          "commit": {
+            "author": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T01:21:55Z"
+            },
+            "committer": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T01:21:55Z"
+            },
+            "message": "Use realistic minimizedReason values in hide_comment test mocks\n\nGitHub returns minimizedReason in lowercase, hyphenated form (e.g.\n\"off-topic\") rather than echoing the classifier enum, as confirmed by\nan end-to-end run against the live API.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "committer": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "parents": [
+            {
+              "sha": "d6eebd1aaa481b1e735f738f8b2952d046913f6a"
+            }
+          ]
+        },
+        {
+          "sha": "07bf50e436f896f1a41d12d16c29e737ef3c2e20",
+          "html_url": "https://github.com/github/github-mcp-server/commit/07bf50e436f896f1a41d12d16c29e737ef3c2e20",
+          "commit": {
+            "author": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T04:27:57Z"
+            },
+            "committer": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T04:27:57Z"
+            },
+            "message": "Split hide/unhide comment tools per object type\n\nReplace hide_comment/unhide_comment, which took a comment_type\nargument, with a granular pair per object type:\n\n- hide_issue_comment / unhide_issue_comment (issues_granular):\n  issue comments and pull request conversation comments\n- hide_pull_request_review_comment / unhide_pull_request_review_comment\n  (pull_requests_granular): inline pull request review comments\n- hide_pull_request_review / unhide_pull_request_review\n  (pull_requests_granular): pull request review bodies\n\nEvery argument is now unconditionally required, so the schemas no\nlonger need prose explaining which arguments apply to which type. The\nsix tools are built from one shared helper, parameterised by a\ncommentVisibilityTarget that describes each object type and how to\nresolve its GraphQL node ID.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "committer": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "parents": [
+            {
+              "sha": "27c0dd5cf0692d0f9f5d593c26743060f488d72c"
+            }
+          ]
+        },
+        {
+          "sha": "04359ff4539679e72cbb1cfbd19dca42b4f0ca78",
+          "html_url": "https://github.com/github/github-mcp-server/commit/04359ff4539679e72cbb1cfbd19dca42b4f0ca78",
+          "commit": {
+            "author": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T04:31:02Z"
+            },
+            "committer": {
+              "name": "timrogers",
+              "email": "116134+timrogers@users.noreply.github.com",
+              "date": "2026-09-30T04:31:02Z"
+            },
+            "message": "Validate classifier and IDs before calling the GitHub API\n\nJSON schema constraints (enum, minimum) aren't enforced when tool\narguments are unmarshalled, so an invalid classifier or a negative ID\npreviously reached GitHub and surfaced as a confusing 404 or GraphQL\nerror. Reject them up front with a clear argument error instead.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "committer": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "parents": [
+            {
+              "sha": "07bf50e436f896f1a41d12d16c29e737ef3c2e20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3355/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "21",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "a3c2e90b6817a266aa38516e54e58c8d207bc704",
+          "html_url": "https://github.com/github/github-mcp-server/commit/a3c2e90b6817a266aa38516e54e58c8d207bc704",
+          "commit": {
+            "author": {
+              "name": "Copilot",
+              "email": "223556219+Copilot@users.noreply.github.com",
+              "date": "2026-09-30T14:25:32Z"
+            },
+            "committer": {
+              "name": "Copilot",
+              "email": "223556219+Copilot@users.noreply.github.com",
+              "date": "2026-09-30T14:25:32Z"
+            },
+            "message": "Fix pending review lookup for masked logins\n\nUse stable GraphQL node IDs instead of viewer login values when selecting the current user's pending pull request review.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-copilot-cli"
+          },
+          "committer": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-copilot-cli"
+          },
+          "parents": [
+            {
+              "sha": "85598ba6e1256f7ebf4867b95d63b833c4549264"
+            }
+          ]
+        },
+        {
+          "sha": "3e7802c5555673e1577caaddc25a73760b5a56da",
+          "html_url": "https://github.com/github/github-mcp-server/commit/3e7802c5555673e1577caaddc25a73760b5a56da",
+          "commit": {
+            "author": {
+              "name": "Copilot",
+              "email": "223556219+Copilot@users.noreply.github.com",
+              "date": "2026-09-30T14:34:19Z"
+            },
+            "committer": {
+              "name": "Copilot",
+              "email": "223556219+Copilot@users.noreply.github.com",
+              "date": "2026-09-30T14:34:19Z"
+            },
+            "message": "Handle concrete review author types\n\nSelect actor node IDs through GraphQL fragments because the Actor interface does not expose id directly.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-copilot-cli"
+          },
+          "committer": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-copilot-cli"
+          },
+          "parents": [
+            {
+              "sha": "a3c2e90b6817a266aa38516e54e58c8d207bc704"
+            }
+          ]
+        },
+        {
+          "sha": "8fb90cdc0149a754c577896d2f6696001d72be51",
+          "html_url": "https://github.com/github/github-mcp-server/commit/8fb90cdc0149a754c577896d2f6696001d72be51",
+          "commit": {
+            "author": {
+              "name": "Copilot",
+              "email": "223556219+Copilot@users.noreply.github.com",
+              "date": "2026-09-30T15:18:37Z"
+            },
+            "committer": {
+              "name": "Copilot",
+              "email": "223556219+Copilot@users.noreply.github.com",
+              "date": "2026-09-30T15:18:37Z"
+            },
+            "message": "Test pending review lookup pagination\n\nCover cursor propagation and viewer review selection on a second page.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-copilot-cli"
+          },
+          "committer": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-copilot-cli"
+          },
+          "parents": [
+            {
+              "sha": "3e7802c5555673e1577caaddc25a73760b5a56da"
+            }
+          ]
+        },
+        {
+          "sha": "2f310fea37ecaa3a737c8e967e035c3df2108df7",
+          "html_url": "https://github.com/github/github-mcp-server/commit/2f310fea37ecaa3a737c8e967e035c3df2108df7",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-01T14:57:51Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-01T14:57:51Z"
+            },
+            "message": "Merge branch 'main' into copilot/fix-pending-review-lookup"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "8fb90cdc0149a754c577896d2f6696001d72be51"
+            },
+            {
+              "sha": "63f559545320fa72eaf184c4a42e05904c09e817"
+            }
+          ]
+        },
+        {
+          "sha": "5a6e82a235aa797a90762e7982ba2e6e60cf8394",
+          "html_url": "https://github.com/github/github-mcp-server/commit/5a6e82a235aa797a90762e7982ba2e6e60cf8394",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-01T18:38:32Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-01T18:38:32Z"
+            },
+            "message": "Merge branch 'main' into copilot/fix-pending-review-lookup"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "2f310fea37ecaa3a737c8e967e035c3df2108df7"
+            },
+            {
+              "sha": "a1f6500450302da817537cbad58e440ec4bb5a24"
+            }
+          ]
+        },
+        {
+          "sha": "65ded23d4e79975e7e77bb8e2c2f1c00f1656123",
+          "html_url": "https://github.com/github/github-mcp-server/commit/65ded23d4e79975e7e77bb8e2c2f1c00f1656123",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T07:39:00Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T07:39:00Z"
+            },
+            "message": "Merge branch 'main' into copilot/fix-pending-review-lookup"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "5a6e82a235aa797a90762e7982ba2e6e60cf8394"
+            },
+            {
+              "sha": "85b0399bf214f24f5028d9cedecdd020f646c822"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3380/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "19",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-10-02T09:51:38Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:39Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:39Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-02T09:52:15Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-02T09:55:27Z",
+          "commit_id": "fcca9062aa2a12b7c43c8f4aefd4f60bbf7a4a44"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T10:18:51Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "fbeba3c994bea051bb5d0b46f2ad2b6495a7bd59"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T10:18:51Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T10:18:54Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3370/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "20",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T08:49:02Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T08:49:03Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-02T08:49:38Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-02T08:53:05Z",
+          "commit_id": "82a0e03b3da2d2d0d6f968306af656d5d96d6a51"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T09:09:33Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T09:09:33Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T09:09:37Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:10:45Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:10:49Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:10:53Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:10:56Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:10:59Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:11:02Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:11:06Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:11:09Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:21:47Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:22:24Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:25:25Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:30:26Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:32:23Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-02T09:38:16Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3380/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "18",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "fcca9062aa2a12b7c43c8f4aefd4f60bbf7a4a44",
+          "html_url": "https://github.com/github/github-mcp-server/commit/fcca9062aa2a12b7c43c8f4aefd4f60bbf7a4a44",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:21:54Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:21:54Z"
+            },
+            "message": "build: upgrade golangci-lint to v2.14.0\n\nResolve new modernization findings and document narrow false-positive suppressions. Verify Go 1.26.8 and 1.27.1 support and remove obsolete export-data compatibility guidance. Refresh cached linter binaries when the repository pin changes.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3370/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "17",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "997b845b52c3e74c658efc28e6096af62fc385f7",
+          "html_url": "https://github.com/github/github-mcp-server/commit/997b845b52c3e74c658efc28e6096af62fc385f7",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T08:45:38Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T08:45:38Z"
+            },
+            "message": "ci(deps): refresh workflow dependencies and align lint Go version\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "38cb0c445dd90d5151001aca07bd33f68017e484"
+            }
+          ]
+        },
+        {
+          "sha": "e69d6e2c14524642d1042a3b2a857bf26666e55a",
+          "html_url": "https://github.com/github/github-mcp-server/commit/e69d6e2c14524642d1042a3b2a857bf26666e55a",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T08:41:37Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T08:45:52Z"
+            },
+            "message": "build(deps): refresh safe dependencies and Dependabot coverage\n\nRemediate all nine open npm alerts, update compatible Go and UI dependencies, refresh pinned Actions and the Go image, and backport the Cosign verification fix. Add weekly npm updates and regenerate third-party notices.\n\nRaise the minimum supported Go version to 1.26.8 for the latest x/net dependency and align CI linting with that toolchain.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "997b845b52c3e74c658efc28e6096af62fc385f7"
+            }
+          ]
+        },
+        {
+          "sha": "82a0e03b3da2d2d0d6f968306af656d5d96d6a51",
+          "html_url": "https://github.com/github/github-mcp-server/commit/82a0e03b3da2d2d0d6f968306af656d5d96d6a51",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T08:47:02Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T08:47:02Z"
+            },
+            "message": "ci: preserve Docker tag ordering and remove trailing whitespace\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "e69d6e2c14524642d1042a3b2a857bf26666e55a"
+            }
+          ]
+        },
+        {
+          "sha": "deadc92b889a5b1e11a0cb323786756040cfefc2",
+          "html_url": "https://github.com/github/github-mcp-server/commit/deadc92b889a5b1e11a0cb323786756040cfefc2",
+          "commit": {
+            "author": {
+              "name": "github-actions[bot]",
+              "email": "github-actions[bot]@users.noreply.github.com",
+              "date": "2026-10-02T08:50:19Z"
+            },
+            "committer": {
+              "name": "github-actions[bot]",
+              "email": "github-actions[bot]@users.noreply.github.com",
+              "date": "2026-10-02T08:50:19Z"
+            },
+            "message": "chore: regenerate license files\n\nAuto-generated by license-check workflow"
+          },
+          "author": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          },
+          "committer": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          },
+          "parents": [
+            {
+              "sha": "82a0e03b3da2d2d0d6f968306af656d5d96d6a51"
+            }
+          ]
+        },
+        {
+          "sha": "8e11ac6ff7ddc607103e72110568bb6f6e6caf4f",
+          "html_url": "https://github.com/github/github-mcp-server/commit/8e11ac6ff7ddc607103e72110568bb6f6e6caf4f",
+          "commit": {
+            "author": {
+              "name": "github-actions[bot]",
+              "email": "github-actions[bot]@users.noreply.github.com",
+              "date": "2026-10-02T09:01:08Z"
+            },
+            "committer": {
+              "name": "github-actions[bot]",
+              "email": "github-actions[bot]@users.noreply.github.com",
+              "date": "2026-10-02T09:01:08Z"
+            },
+            "message": "chore: regenerate license files\n\nAuto-generated by license-check workflow"
+          },
+          "author": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          },
+          "committer": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          },
+          "parents": [
+            {
+              "sha": "deadc92b889a5b1e11a0cb323786756040cfefc2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3381/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "16",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-10-02T09:51:40Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:41Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:41Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-02T09:52:17Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-02T09:53:56Z",
+          "commit_id": "b429956344d4ee09d4e1c43fc747d83979167b47"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T10:19:44Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "5e39ec8bbb4b24f8a420599b1036cf8d753373ea"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T10:19:44Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T10:19:47Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "referenced",
+          "created_at": "2026-10-02T13:12:45Z",
+          "actor": {
+            "login": "louim",
+            "type": "User",
+            "html_url": "https://github.com/louim"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3379/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "15",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-10-02T09:51:36Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:37Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:37Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-02T09:52:08Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-02T09:54:02Z",
+          "commit_id": "9a3215311df3b43f5c556a31139184be59447972"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T10:20:49Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "f89f88451dc8b40a19a1e9b5f3f077c7471d9226"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T10:20:49Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T10:20:52Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3381/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "14",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "b429956344d4ee09d4e1c43fc747d83979167b47",
+          "html_url": "https://github.com/github/github-mcp-server/commit/b429956344d4ee09d4e1c43fc747d83979167b47",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:26:51Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:26:51Z"
+            },
+            "message": "build(deps): upgrade go-github to v92.0.0\n\nMigrate all go-github imports and issue comment requests while preserving MCP schemas and payloads. Let v92 escape ruleset branch names exactly once. Refresh dependency license reports and narrowly retain the supported Ptr helper for compatibility with the pinned linter.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3379/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "13",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "9a3215311df3b43f5c556a31139184be59447972",
+          "html_url": "https://github.com/github/github-mcp-server/commit/9a3215311df3b43f5c556a31139184be59447972",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:19:54Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:19:54Z"
+            },
+            "message": "build(ui): upgrade TypeScript 7 and align Node 26 toolchain\n\nRead the CI Node version from UI engines and match Docker and Node types.\\nDocument the native compiler workflow without changing UI dependencies.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3382/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "11",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-10-02T09:51:42Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:43Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:43Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-02T09:52:17Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-02T09:53:33Z",
+          "commit_id": "9149ed1610d551486ba984f60fa1faeed8bfb058"
+        },
+        {
+          "event": "renamed",
+          "created_at": "2026-10-02T10:39:29Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T11:22:58Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "36e5c48f2e376f8f4ffa30fd718c38deedb7ae27"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T11:22:58Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T11:23:01Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3378/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "12",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-10-02T09:51:34Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:35Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:35Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-02T09:52:13Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-02T09:54:53Z",
+          "commit_id": "012ff80fbbbffe2f30b51b2a0ed294cc65ff9a06"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T11:07:01Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "876195b5b943e11a321f25190b139b9e922f7dbf"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T11:07:02Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T11:07:04Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-09T05:44:43Z",
+          "actor": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3382/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "10",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "9149ed1610d551486ba984f60fa1faeed8bfb058",
+          "html_url": "https://github.com/github/github-mcp-server/commit/9149ed1610d551486ba984f60fa1faeed8bfb058",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:28:16Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:28:16Z"
+            },
+            "message": "ci: migrate cosign to v3 with legacy signature compatibility\n\nKeep legacy image payloads, .sig tags, and Rekor v1 service defaults. Document exact cosign v2/v3 image verification and unchanged release archive attestations.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+            }
+          ]
+        },
+        {
+          "sha": "813e3fa03465d1aee39f70771349c15ae68bb839",
+          "html_url": "https://github.com/github/github-mcp-server/commit/813e3fa03465d1aee39f70771349c15ae68bb839",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:39:39Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:39:39Z"
+            },
+            "message": "ci: dual-publish legacy and native cosign image signatures\n\nSign the same immutable digest in separate fail-fast steps. Retain legacy signatures and publish native bundles with v3 service defaults. Remove the verification documentation introduced by this PR as requested; keep compatibility evidence and rollout plans in the PR description.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "9149ed1610d551486ba984f60fa1faeed8bfb058"
+            }
+          ]
+        },
+        {
+          "sha": "21f4377dbad4642b1873d14b30331a6a721b3b92",
+          "html_url": "https://github.com/github/github-mcp-server/commit/21f4377dbad4642b1873d14b30331a6a721b3b92",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T11:07:02Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T11:07:02Z"
+            },
+            "message": "Merge branch 'main' into sammorrowdrums-cosign-v3-signing-migration"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "813e3fa03465d1aee39f70771349c15ae68bb839"
+            },
+            {
+              "sha": "f89f88451dc8b40a19a1e9b5f3f077c7471d9226"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3378/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "9",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "012ff80fbbbffe2f30b51b2a0ed294cc65ff9a06",
+          "html_url": "https://github.com/github/github-mcp-server/commit/012ff80fbbbffe2f30b51b2a0ed294cc65ff9a06",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:20:35Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:20:35Z"
+            },
+            "message": "feat(ui): migrate MCP Apps SDK to v2\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+            }
+          ]
+        },
+        {
+          "sha": "1e6f8d23026c56d7fcdf455f838c673b2222419e",
+          "html_url": "https://github.com/github/github-mcp-server/commit/1e6f8d23026c56d7fcdf455f838c673b2222419e",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:21:22Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T10:21:22Z"
+            },
+            "message": "Merge branch 'main' into sammorrowdrums-ext-apps-2-migration"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "012ff80fbbbffe2f30b51b2a0ed294cc65ff9a06"
+            },
+            {
+              "sha": "f89f88451dc8b40a19a1e9b5f3f077c7471d9226"
+            }
+          ]
+        },
+        {
+          "sha": "c9b5b6614bbf854e903128cda57e3ece2355b5da",
+          "html_url": "https://github.com/github/github-mcp-server/commit/c9b5b6614bbf854e903128cda57e3ece2355b5da",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:57:52Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:57:52Z"
+            },
+            "message": "fix: migrate go-github Ptr calls for Go 1.26 lint\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "1e6f8d23026c56d7fcdf455f838c673b2222419e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/issues/3383/timeline?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "8",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "event": "committed"
+        },
+        {
+          "event": "ready_for_review",
+          "created_at": "2026-10-02T09:51:44Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:45Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "review_requested",
+          "created_at": "2026-10-02T09:51:45Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "copilot_work_started",
+          "created_at": "2026-10-02T09:52:20Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "reviewed",
+          "user": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+          },
+          "state": "commented",
+          "submitted_at": "2026-10-02T09:56:31Z",
+          "commit_id": "f36ddee702fdb0865846c777ee881d362dff1439"
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "commented",
+          "created_at": "2026-10-02T10:21:25Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "committed"
+        },
+        {
+          "event": "merged",
+          "created_at": "2026-10-02T14:31:12Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "commit_id": "f10e4e1f923d46b86f2e80e849aa74084c847184"
+        },
+        {
+          "event": "closed",
+          "created_at": "2026-10-02T14:31:12Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "head_ref_deleted",
+          "created_at": "2026-10-02T14:31:15Z",
+          "actor": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          }
+        },
+        {
+          "event": "cross-referenced",
+          "created_at": "2026-10-09T05:44:43Z",
+          "actor": {
+            "login": "github-actions[bot]",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/github-actions"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/pulls/3383/commits?per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "7",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "f36ddee702fdb0865846c777ee881d362dff1439",
+          "html_url": "https://github.com/github/github-mcp-server/commit/f36ddee702fdb0865846c777ee881d362dff1439",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:37:22Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:37:22Z"
+            },
+            "message": "build(ui): migrate to React 19 and Primer React 38\n\nReplace removed Box and sx APIs with native styles and CSS Modules, load Primer CSS tokens, use the CSS-based theme provider and Banner, and scope custom-element JSX types to the React runtime.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+            }
+          ]
+        },
+        {
+          "sha": "ad936a1c899404db01f2738c693a9225a423a924",
+          "html_url": "https://github.com/github/github-mcp-server/commit/ad936a1c899404db01f2738c693a9225a423a924",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:20:55Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:20:55Z"
+            },
+            "message": "fix(ui): use CSS token for reviewer label backgrounds\n\nReplace leftover canvas.inset theme paths with the CSS custom property in PR creation and editing. Keep the reviewed native gaps unchanged.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "f36ddee702fdb0865846c777ee881d362dff1439"
+            }
+          ]
+        },
+        {
+          "sha": "ba4f6efa4e2adc280cb300bf68e0676931d1ed43",
+          "html_url": "https://github.com/github/github-mcp-server/commit/ba4f6efa4e2adc280cb300bf68e0676931d1ed43",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T13:48:00Z"
+            },
+            "committer": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T13:48:00Z"
+            },
+            "message": "chore: merge main into React and Primer migration\n\nPreserve main's MCP Apps SDK v2, TypeScript 7 and Node 26 updates alongside React 19 and Primer 38. Regenerate the lockfile with npm on Node 26.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "parents": [
+            {
+              "sha": "ad936a1c899404db01f2738c693a9225a423a924"
+            },
+            {
+              "sha": "36e5c48f2e376f8f4ffa30fd718c38deedb7ae27"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/repos/github/github-mcp-server/commits?sha=main&since=2026-10-01T00:00:00Z&until=2026-10-02T23:59:59Z&per_page=100",
+      "status": 200,
+      "headers": {
+        "x-ratelimit-remaining": "6",
+        "x-ratelimit-resource": "core"
+      },
+      "body": [
+        {
+          "sha": "f10e4e1f923d46b86f2e80e849aa74084c847184",
+          "html_url": "https://github.com/github/github-mcp-server/commit/f10e4e1f923d46b86f2e80e849aa74084c847184",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T14:31:11Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T14:31:11Z"
+            },
+            "message": "build(ui): migrate to React 19 and Primer React 38 (#3383)\n\n* build(ui): migrate to React 19 and Primer React 38\n\nReplace removed Box and sx APIs with native styles and CSS Modules, load Primer CSS tokens, use the CSS-based theme provider and Banner, and scope custom-element JSX types to the React runtime.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* fix(ui): use CSS token for reviewer label backgrounds\n\nReplace leftover canvas.inset theme paths with the CSS custom property in PR creation and editing. Keep the reviewed native gaps unchanged.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n---------\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "36e5c48f2e376f8f4ffa30fd718c38deedb7ae27"
+            }
+          ]
+        },
+        {
+          "sha": "36e5c48f2e376f8f4ffa30fd718c38deedb7ae27",
+          "html_url": "https://github.com/github/github-mcp-server/commit/36e5c48f2e376f8f4ffa30fd718c38deedb7ae27",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T11:22:57Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T11:22:57Z"
+            },
+            "message": "ci: migrate cosign to v3 and dual-publish image signatures (#3382)\n\n* ci: migrate cosign to v3 with legacy signature compatibility\n\nKeep legacy image payloads, .sig tags, and Rekor v1 service defaults. Document exact cosign v2/v3 image verification and unchanged release archive attestations.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* ci: dual-publish legacy and native cosign image signatures\n\nSign the same immutable digest in separate fail-fast steps. Retain legacy signatures and publish native bundles with v3 service defaults. Remove the verification documentation introduced by this PR as requested; keep compatibility evidence and rollout plans in the PR description.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n---------\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "876195b5b943e11a321f25190b139b9e922f7dbf"
+            }
+          ]
+        },
+        {
+          "sha": "876195b5b943e11a321f25190b139b9e922f7dbf",
+          "html_url": "https://github.com/github/github-mcp-server/commit/876195b5b943e11a321f25190b139b9e922f7dbf",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T11:07:00Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T11:07:00Z"
+            },
+            "message": "feat(ui): migrate MCP Apps SDK to v2 (#3378)\n\n* feat(ui): migrate MCP Apps SDK to v2\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* fix: migrate go-github Ptr calls for Go 1.26 lint\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n---------\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "f89f88451dc8b40a19a1e9b5f3f077c7471d9226"
+            }
+          ]
+        },
+        {
+          "sha": "f89f88451dc8b40a19a1e9b5f3f077c7471d9226",
+          "html_url": "https://github.com/github/github-mcp-server/commit/f89f88451dc8b40a19a1e9b5f3f077c7471d9226",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:20:48Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T10:20:48Z"
+            },
+            "message": "build(ui): upgrade TypeScript 7 and align Node 26 toolchain (#3379)\n\nRead the CI Node version from UI engines and match Docker and Node types.\\nDocument the native compiler workflow without changing UI dependencies.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "5e39ec8bbb4b24f8a420599b1036cf8d753373ea"
+            }
+          ]
+        },
+        {
+          "sha": "5e39ec8bbb4b24f8a420599b1036cf8d753373ea",
+          "html_url": "https://github.com/github/github-mcp-server/commit/5e39ec8bbb4b24f8a420599b1036cf8d753373ea",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:19:43Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T10:19:43Z"
+            },
+            "message": "build(deps): upgrade go-github to v92.0.0 (#3381)\n\nMigrate all go-github imports and issue comment requests while preserving MCP schemas and payloads. Let v92 escape ruleset branch names exactly once. Refresh dependency license reports and narrowly retain the supported Ptr helper for compatibility with the pinned linter.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "fbeba3c994bea051bb5d0b46f2ad2b6495a7bd59"
+            }
+          ]
+        },
+        {
+          "sha": "fbeba3c994bea051bb5d0b46f2ad2b6495a7bd59",
+          "html_url": "https://github.com/github/github-mcp-server/commit/fbeba3c994bea051bb5d0b46f2ad2b6495a7bd59",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T10:18:50Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T10:18:50Z"
+            },
+            "message": "build: upgrade golangci-lint to v2.14.0 (#3380)\n\nResolve new modernization findings and document narrow false-positive suppressions. Verify Go 1.26.8 and 1.27.1 support and remove obsolete export-data compatibility guidance. Refresh cached linter binaries when the repository pin changes.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5"
+            }
+          ]
+        },
+        {
+          "sha": "cd5023333609cb54c13f7f96e84ddc67028540e5",
+          "html_url": "https://github.com/github/github-mcp-server/commit/cd5023333609cb54c13f7f96e84ddc67028540e5",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-02T09:09:32Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T09:09:32Z"
+            },
+            "message": "build(deps): remediate npm alerts and refresh safe dependencies (#3370)\n\n* ci(deps): refresh workflow dependencies and align lint Go version\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* build(deps): refresh safe dependencies and Dependabot coverage\n\nRemediate all nine open npm alerts, update compatible Go and UI dependencies, refresh pinned Actions and the Go image, and backport the Cosign verification fix. Add weekly npm updates and regenerate third-party notices.\n\nRaise the minimum supported Go version to 1.26.8 for the latest x/net dependency and align CI linting with that toolchain.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* ci: preserve Docker tag ordering and remove trailing whitespace\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* chore: regenerate license files\n\nAuto-generated by license-check workflow\n\n* chore: regenerate license files\n\nAuto-generated by license-check workflow\n\n---------\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\nCo-authored-by: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "38cb0c445dd90d5151001aca07bd33f68017e484"
+            }
+          ]
+        },
+        {
+          "sha": "38cb0c445dd90d5151001aca07bd33f68017e484",
+          "html_url": "https://github.com/github/github-mcp-server/commit/38cb0c445dd90d5151001aca07bd33f68017e484",
+          "commit": {
+            "author": {
+              "name": "Copilot",
+              "email": "198982749+Copilot@users.noreply.github.com",
+              "date": "2026-10-02T07:44:02Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-02T07:44:02Z"
+            },
+            "message": "fix(pull_request_reviews): Update pending pull request review lookup to work when the authenticated actor is a Copilot bot (#3355)"
+          },
+          "author": {
+            "login": "Copilot",
+            "type": "Bot",
+            "html_url": "https://github.com/apps/copilot-swe-agent"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "85b0399bf214f24f5028d9cedecdd020f646c822"
+            }
+          ]
+        },
+        {
+          "sha": "85b0399bf214f24f5028d9cedecdd020f646c822",
+          "html_url": "https://github.com/github/github-mcp-server/commit/85b0399bf214f24f5028d9cedecdd020f646c822",
+          "commit": {
+            "author": {
+              "name": "Tim Rogers",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-01T19:01:48Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-01T19:01:48Z"
+            },
+            "message": "Add granular tools to hide and unhide issue comments, PR review comments and PR reviews (#3350)\n\n* Add hide_comment and unhide_comment granular issue tools\n\nAdd two tools behind the issues_granular feature flag that hide\n(minimize) and unhide (unminimize) comments via the GraphQL\nminimizeComment/unminimizeComment mutations.\n\nThey support issue and pull request conversation comments, pull\nrequest review comments, and pull request review bodies. Callers\npass the numeric REST ID plus a comment_type; the tool resolves the\nGraphQL node ID via the matching REST endpoint before mutating.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\n\n* Rename comment_type enum values to pull_request_review(_comment)\n\nUse `pull_request_review` and `pull_request_review_comment` instead of\n`review` and `review_comment` so the comment_type values are explicit\nabout which object they refer to.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\n\n* Use realistic minimizedReason values in hide_comment test mocks\n\nGitHub returns minimizedReason in lowercase, hyphenated form (e.g.\n\"off-topic\") rather than echoing the classifier enum, as confirmed by\nan end-to-end run against the live API.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\n\n* Split hide/unhide comment tools per object type\n\nReplace hide_comment/unhide_comment, which took a comment_type\nargument, with a granular pair per object type:\n\n- hide_issue_comment / unhide_issue_comment (issues_granular):\n  issue comments and pull request conversation comments\n- hide_pull_request_review_comment / unhide_pull_request_review_comment\n  (pull_requests_granular): inline pull request review comments\n- hide_pull_request_review / unhide_pull_request_review\n  (pull_requests_granular): pull request review bodies\n\nEvery argument is now unconditionally required, so the schemas no\nlonger need prose explaining which arguments apply to which type. The\nsix tools are built from one shared helper, parameterised by a\ncommentVisibilityTarget that describes each object type and how to\nresolve its GraphQL node ID.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\n\n* Validate classifier and IDs before calling the GitHub API\n\nJSON schema constraints (enum, minimum) aren't enforced when tool\narguments are unmarshalled, so an invalid classifier or a negative ID\npreviously reached GitHub and surfaced as a confusing 404 or GraphQL\nerror. Reject them up front with a clear argument error instead.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\n\n---------\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "timrogers",
+            "type": "User",
+            "html_url": "https://github.com/timrogers"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "a1f6500450302da817537cbad58e440ec4bb5a24"
+            }
+          ]
+        },
+        {
+          "sha": "a1f6500450302da817537cbad58e440ec4bb5a24",
+          "html_url": "https://github.com/github/github-mcp-server/commit/a1f6500450302da817537cbad58e440ec4bb5a24",
+          "commit": {
+            "author": {
+              "name": "Johanan",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-01T15:31:36Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-01T15:31:36Z"
+            },
+            "message": "Use source revisions for non-release Docker builds (#3357)\n\nOnly tag builds should supply a release version. Other Docker builds use the existing linked-commit fallback instead of treating a branch or pull-request ref name as a release.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\nCopilot-Session: 6dde41da-ec25-4370-b26c-b036d0a53b3c"
+          },
+          "author": {
+            "login": "jidicula",
+            "type": "User",
+            "html_url": "https://github.com/jidicula"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "63f559545320fa72eaf184c4a42e05904c09e817"
+            }
+          ]
+        },
+        {
+          "sha": "63f559545320fa72eaf184c4a42e05904c09e817",
+          "html_url": "https://github.com/github/github-mcp-server/commit/63f559545320fa72eaf184c4a42e05904c09e817",
+          "commit": {
+            "author": {
+              "name": "Sam Morrow",
+              "email": "redacted@example.invalid",
+              "date": "2026-10-01T13:54:18Z"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "date": "2026-10-01T13:54:18Z"
+            },
+            "message": "Always enable MCP Apps UI; remove remote_mcp_ui_apps flag gate (#3348)\n\n* Always enable MCP Apps UI; remove remote_mcp_ui_apps flag gate\n\nThe remote_mcp_ui_apps flag is fully rolled out on the hosted server, but\nthe OSS server still defaulted it off. Make MCP Apps unconditional:\n\n- _meta.ui is always emitted, stripped only when the client explicitly\n  does not advertise the io.modelcontextprotocol/ui capability\n- ui_get is always registered\n- write tools defer to MCP App forms by default (still opt-out via\n  mcp_apps_disable_form_deferral)\n- remove MCPAppsFeatureFlag and its AllowedFeatureFlags/InsidersFeatureFlags\n  entries\n- update tests and regenerate docs\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* Remove unused Inventory.checkFeatureFlag\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n* Omit app-only tools for clients without MCP Apps support\n\nWhen a client does not advertise io.modelcontextprotocol/ui, stripping\n_meta.ui from ui_get turned it into an ordinary model-visible tool,\nviolating its app-only contract. Now that ui_get is no longer feature\ngated, omit tools whose ui.visibility excludes \"model\" instead.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>\n\n---------\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>"
+          },
+          "author": {
+            "login": "SamMorrowDrums",
+            "type": "User",
+            "html_url": "https://github.com/SamMorrowDrums"
+          },
+          "committer": {
+            "login": "web-flow",
+            "type": "User",
+            "html_url": "https://github.com/web-flow"
+          },
+          "parents": [
+            {
+              "sha": "5a1a3866d4a681d771162d35680d6c7219eac3b0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

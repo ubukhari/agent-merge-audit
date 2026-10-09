@@ -1,0 +1,18 @@
+{
+  "name": "agent-merge-audit",
+  "version": "0.1.0",
+  "description": "Which merges an AI agent wrote, and whether a person approved them: every pull request merged in a period with its agent (Copilot's coding agent, Claude Code, Codex, Cursor, Devin, Jules, Amp and others), its approvals, who merged it, the review rule and the SOC 2 CC8.1 exceptions, as a dated CSV and markdown pair. Runs npx --allow-git=root github:agentwares/agent-merge-audit locally; no account, no LLM calls of its own. Not audit advice.",
+  "author": {
+    "name": "agentwares",
+    "url": "https://github.com/agentwares"
+  },
+  "homepage": "https://agentwares-agentguard.vercel.app/merge-audit",
+  "documentationUrl": "https://github.com/agentwares/agent-merge-audit#readme",
+  "repository": "https://github.com/agentwares/agent-merge-audit",
+  "privacyPolicyUrl": "https://agentwares-agentguard.vercel.app/privacy",
+  "termsOfServiceUrl": "https://agentwares-agentguard.vercel.app/terms",
+  "supportUrl": "https://agentwares.vercel.app/contact",
+  "license": "MIT",
+  "icon": "./.claude-plugin/icon.png",
+  "keywords": ["soc2", "cc8.1", "audit", "pull-request", "code-review", "ai-generated-code"]
+}

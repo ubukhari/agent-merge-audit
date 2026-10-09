@@ -1,0 +1,17 @@
+{
+  "name": "agent-merge-audit",
+  "description": "agent-merge-audit inside Claude Code: which merges into your main branch an AI agent wrote or co-wrote, whether a person other than its authors approved each one, who merged it, and the SOC 2 CC8.1 exceptions an auditor asks about, as a dated CSV and markdown pair. Open source, no account, GETs to GitHub's API only. Not audit advice.",
+  "owner": {
+    "name": "agentwares",
+    "url": "https://github.com/agentwares"
+  },
+  "plugins": [
+    {
+      "name": "agent-merge-audit",
+      "source": "./plugins/agent-merge-audit",
+      "description": "List a period's merges with who or what wrote them and who approved them. /agent-merge-audit:agent-merge-audit runs `npx --allow-git=root github:agentwares/agent-merge-audit` on owner/repo and explains each exception and the question an auditor would ask about it.",
+      "category": "development",
+      "tags": ["soc2", "cc8.1", "audit", "pull-request", "code-review", "ai-generated-code"]
+    }
+  ]
+}

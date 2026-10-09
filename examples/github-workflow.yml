@@ -1,0 +1,35 @@
+# .github/workflows/agent-merge-audit.yml: on the 1st of each month, list last month's merges into
+# the default branch with whether an agent wrote them and whether a person approved them, and keep
+# the dated CSV and markdown pair as an artifact. Evidence only: it does not fail the job unless
+# fail-on says so. Not audit advice.
+name: Agent-merge audit
+on:
+  schedule:
+    - cron: "23 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      period:
+        description: "A month (2026-09) or quarter (2026-Q3); empty for last month"
+        required: false
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - id: period
+        run: echo "last=$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)" >> "$GITHUB_OUTPUT"
+      - id: audit
+        uses: agentwares/agent-merge-audit@main
+        with:
+          period: ${{ inputs.period || steps.period.outputs.last }}
+          fail-on: none
+      - uses: actions/upload-artifact@v6
+        with:
+          name: agent-merge-audit-${{ inputs.period || steps.period.outputs.last }}
+          path: |
+            ${{ steps.audit.outputs.csv }}
+            ${{ steps.audit.outputs.markdown }}
+          retention-days: 90

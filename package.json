@@ -1,0 +1,75 @@
+{
+  "name": "agent-merge-audit",
+  "version": "0.1.0",
+  "description": "Which merges an AI agent wrote, and whether a person approved them: every pull request merged into a GitHub repo's main branch in a period, with whether Copilot's coding agent, Claude Code, Codex, Cursor, Devin, Jules, Amp or another agent wrote or co-wrote it, whether a person other than its authors approved it before merge on the code that merged, who merged it, the review rule, and the exceptions an auditor asks about for SOC 2 CC8.1. A dated CSV and markdown evidence pair. Uses your own GitHub token, or none for a public repo. A CLI, a GitHub Action and a local MCP server. No account. Not audit advice.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "agent-merge-audit": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentwares/agent-merge-audit.git"
+  },
+  "homepage": "https://agentwares-agentguard.vercel.app/merge-audit",
+  "bugs": {
+    "url": "https://github.com/agentwares/agent-merge-audit/issues"
+  },
+  "keywords": [
+    "soc2",
+    "soc-2",
+    "cc8.1",
+    "change-management",
+    "audit",
+    "compliance",
+    "pull-request",
+    "code-review",
+    "github",
+    "copilot",
+    "claude-code",
+    "ai-generated-code",
+    "co-authored-by",
+    "mcp",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "pretest": "pnpm run build:dist",
+    "pretypecheck": "pnpm run build:dist",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "build:dist": "tsup"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.4.1",
+    "eslint": "^10.9.1",
+    "prettier": "^3.9.6",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.1.11"
+  }
+}
